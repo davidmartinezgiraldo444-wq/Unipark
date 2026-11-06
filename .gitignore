@@ -1,0 +1,28 @@
+# Secretos y configuración local
+.env
+*.local.php
+
+# Archivos generados en storage (se conservan las carpetas)
+storage/logs/*
+storage/receipts/*
+storage/backups/*
+!storage/**/.gitkeep
+!storage/.htaccess
+
+# Dependencias y herramientas
+/vendor/
+.phpunit.cache/
+.claude/
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# Paquete de distribución y configuración del instalador
+/dist/
+config/env.php
+storage/installed.lock

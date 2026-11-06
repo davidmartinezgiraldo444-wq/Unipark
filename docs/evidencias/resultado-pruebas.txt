@@ -1,0 +1,109 @@
+UniPark · Resultado de pruebas automatizadas
+Fecha: 2026-11-06 07:57 · PHP 8.2.12 · 10.4.32-MariaDB
+Comando: php tests/run.php
+
+UniPark · pruebas sobre la base 'unipark_test'
+
+Unit/RequestTest
+  ✓ testDetrasDeUnTunelSeUsaLaIpDelVisitante 1 ms
+  ✓ testUnVisitanteDirectoNoPuedeFalsificarSuIp 0 ms
+  ✓ testHttpsTerminadoPorElTunel 0 ms
+
+Unit/TarifaTest
+  ✓ testAceptaValoresPositivosConHastaDosDecimales 1 ms
+  ✓ testRechazaNegativosTextoYMasDeDosDecimales 0 ms
+  ✓ testTarifaCeroDependeDeLaPoliticaInstitucional 0 ms
+  ✓ testComparaMontosEnCentavosSinErroresDeComaFlotante 0 ms
+  ✓ testSoloExistenLasCategoriasEstudianteYProfesor 0 ms
+  ✓ testSoloExistenLosTiposCarroYMoto 0 ms
+
+Unit/ValidacionVisitaTest
+  ✓ testSalidaPermitidaConVisitaAbiertaYPagoDeEsaVisita 0 ms
+  ✓ testSalidaSinPagoSeDeniegaConElMensajeDelDocumento 0 ms
+  ✓ testSalidaConPagoAnuladoSeDeniega 0 ms
+  ✓ testSalidaConPagoDeOtraVisitaSeDeniega 0 ms
+  ✓ testSalidaDeVisitaCerradaOInexistenteSeDeniega 0 ms
+  ✓ testPagoUnicoPorElMontoExacto 0 ms
+  ✓ testPagoAnuladoPermiteUnNuevoCobro 0 ms
+  ✓ testDocumentoDelEstudiante 0 ms
+  ✓ testPoliticaDeContrasenas 0 ms
+
+Integration/AuditoriaTest
+  ✓ testCP13CambioDeTarifaRegistraUsuarioHoraAccionYValores 474 ms
+  ✓ testCP13AnulacionRegistraElMotivo 367 ms
+  ✓ testTarifaIgualOValorInvalidoSeRechaza 398 ms
+  ✓ testLaBitacoraNoSePuedeModificarNiBorrar 368 ms
+  ✓ testLaCuentaDeLaAplicacionNoTienePermisoDeBorrar 334 ms
+
+Integration/BackupRestoreTest
+  ✓ testCP14RespaldoYRestauracionRecuperanElEstado 1259 ms
+  ✓ testRestaurarSinConfirmacionNoModificaNada 687 ms
+
+Integration/EntradaTest
+  ✓ testCP01EntradaValidaCreaVisitaEnCurso 352 ms
+  ✓ testCP02EntradaDuplicadaSeRechazaYMuestraLaVisitaActual 392 ms
+  ✓ testCP03DosEntradasSimultaneasSoloConfirmanUna 1897 ms
+  ✓ testCP03LaBaseRechazaUnaSegundaVisitaAbiertaAunqueSeOmitaLaAplicacion 469 ms
+  ✓ testCP10CambioDeTarifaNoAlteraVisitasExistentes 532 ms
+  ✓ testCP10LaBaseImpideEditarLaTarifaAplicada 456 ms
+  ✓ testProfesorPagaLaTarifaDeProfesor 568 ms
+  ✓ testLaBaseImpideUsarLaTarifaDeOtraCategoria 455 ms
+  ✓ testEstudianteInactivoOInexistenteNoIngresa 513 ms
+  ✓ testDespuesDeSalirElEstudiantePuedeVolverAIngresar 463 ms
+  ✓ testAnularVisitaExigeMotivoYConservaLaFila 495 ms
+
+Integration/PagoTest
+  ✓ testCP04PagoValidoPorElMontoExactoConConsecutivoUnico 486 ms
+  ✓ testCP05UnaVisitaNoSePuedePagarDosVeces 477 ms
+  ✓ testCP05LaBaseRechazaUnSegundoPagoValidoDirecto 470 ms
+  ✓ testCP05PagosSimultaneosDeLaMismaVisitaSoloConfirmanUno 2056 ms
+  ✓ testNoSeCobraUnaVisitaCerradaOAnulada 518 ms
+  ✓ testAnularPagoExigeMotivoConservaLaFilaYPermiteNuevoCobro 482 ms
+  ✓ testLaBaseImpideModificarOBorrarPagosConfirmados 407 ms
+
+Integration/SalidaTest
+  ✓ testCP06SalidaSinPagoSeDeniegaYNoSeRegistra 447 ms
+  ✓ testCP07SalidaConPagoCierraLaVisita 487 ms
+  ✓ testFlujoCompletoEntradaPagoSalida 531 ms
+  ✓ testUnaVisitaCerradaNoSaleDosVecesNiSeModifica 497 ms
+  ✓ testPagoAnuladoVuelveABloquearLaSalida 487 ms
+  ✓ testLaBaseExigeEstadosConsistentes 474 ms
+
+Integration/VistasTest
+  ✓ testEditarPersonaMuestraSusDatosYCategoria 484 ms
+  ✓ testEditarUsuarioMuestraSusDatos 478 ms
+  ✓ testPorteriaMuestraLaTarifaDeLaCategoria 492 ms
+  ✓ testLaRaizAbreElAccesoOElPanel 480 ms
+  ✓ testLaPresentacionPublicaQuedaEnInicio 497 ms
+  ✓ testLosRecursosLlevanVersionParaEvitarCacheVieja 482 ms
+  ✓ testUnaVistaPuedeRecibirUnaVariableLlamadaDatos 455 ms
+
+Security/CsrfTest
+  ✓ testCP12PagoSinTokenSeRechaza 509 ms
+  ✓ testCP12TokenIncorrectoSeRechazaEnTodasLasOperacionesSensibles 515 ms
+  ✓ testCP12LoginTambienExigeToken 523 ms
+  ✓ testConTokenValidoLaOperacionProcede 505 ms
+  ✓ testLosFormulariosIncluyenElToken 571 ms
+
+Security/PermisosTest
+  ✓ testCP08CajaNoPuedeRegistrarSalidaNiLlamandoLaUrlDirectamente 561 ms
+  ✓ testCP08PorteriaNoPuedeRegistrarPagoNiLlamandoLaUrlDirectamente 498 ms
+  ✓ testCP08CadaRolSoloAccedeASusModulos 586 ms
+  ✓ testSinSesionTodaRutaProtegidaRedirigeAlLogin 467 ms
+  ✓ testCP09UsuarioInactivoNoPuedeIniciarSesion 817 ms
+  ✓ testCuentaDesactivadaPierdeLaSesionDeInmediato 526 ms
+  ✓ testRN14LaSesionExpiraPorInactividad 515 ms
+  ✓ testMensajeGenericoYLimiteDeIntentos 1469 ms
+  ✓ testLoginCorrectoRegeneraLaSesionYAuditaElIngreso 680 ms
+  ✓ testLaMatrizDePermisosDeLaBaseCoincideConLaDocumentada 485 ms
+  ✓ testNoSePuedeDesactivarAlUltimoAdministradorNiLaPropiaCuenta 511 ms
+
+Security/SqlInjectionTest
+  ✓ testCP11BusquedaDeEstudiantesTrataLaEntradaComoDato 503 ms
+  ✓ testCP11ComodinesDeLikeSeBuscanLiteralmente 496 ms
+  ✓ testCP11LoginConInyeccionNoAutentica 2106 ms
+  ✓ testCP11PorteriaYReportesConParametrosMaliciosos 527 ms
+  ✓ testXssLosDatosSeEscapanAntesDeImprimirse 555 ms
+  ✓ testErroresInternosNoSeMuestranEnPantalla 536 ms
+
+78 pruebas · 0 fallidas · 0 omitidas · 36.4 s

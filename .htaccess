@@ -1,0 +1,30 @@
+# UniPark · Apache (XAMPP)
+# El punto de entrada es index.php en esta carpeta. Las carpetas internas
+# (app, config, database, storage, tests, docs, scripts) tienen además su
+# propio .htaccess que niega todo acceso. Estas reglas no reemplazan los
+# controles de seguridad del código PHP.
+
+Options -Indexes
+DirectoryIndex index.php
+
+# Archivos ocultos, de configuración, datos y documentación: nunca por la web.
+<FilesMatch "(^\.|\.(env|sql|md|mmd|log|lock|sh|bat|ini|json|txt)$)">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Carpetas internas y archivos ocultos.
+    RewriteRule ^(app|config|database|storage|tests|docs|scripts)(/|$) - [F,L]
+    RewriteRule (^|/)\. - [F,L]
+
+    # Todo lo que no sea un archivo existente pasa por index.php.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>

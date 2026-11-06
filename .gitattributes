@@ -1,0 +1,10 @@
+# Finales de línea: los scripts de Bash necesitan LF y los de Windows, CRLF.
+* text=auto
+*.sh  text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binarios
+*.png binary
+*.jpg binary
+*.zip binary

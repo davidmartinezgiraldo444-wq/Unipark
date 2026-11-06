@@ -1,0 +1,121 @@
+%% UniPark · Diagrama entidad-relación
+%% Fuente editable (Mermaid). Imagen generada: er-diagram.png
+%% Se corresponde con database/schema.sql.
+erDiagram
+    ESTUDIANTES ||--o{ VISITAS : "realiza"
+    TARIFAS ||--o{ VISITAS : "se aplica a"
+    VISITAS ||--o{ PAGOS : "se paga con (máx. 1 PAGADO)"
+    ROLES ||--o{ USUARIOS : "asigna"
+    ROLES ||--o{ ROL_PERMISO : "tiene"
+    PERMISOS ||--o{ ROL_PERMISO : "pertenece a"
+    USUARIOS ||--o{ TARIFAS : "crea"
+    USUARIOS ||--o{ VISITAS : "registra entrada / salida / anulación"
+    USUARIOS ||--o{ PAGOS : "registra / anula"
+    USUARIOS |o--o{ AUDITORIA : "genera"
+
+    ESTUDIANTES {
+        int id_estudiante PK
+        varchar documento UK "único"
+        varchar nombres
+        varchar apellidos
+        varchar correo "NULL"
+        varchar telefono "NULL"
+        enum categoria "ESTUDIANTE | PROFESOR"
+        tinyint activo
+        datetime creado_en
+        datetime actualizado_en
+    }
+
+    ROLES {
+        tinyint id_rol PK
+        varchar nombre UK
+        varchar descripcion
+        tinyint activo
+    }
+
+    PERMISOS {
+        smallint id_permiso PK
+        varchar codigo UK "ej. ENTRADA_CREAR"
+        varchar descripcion
+    }
+
+    ROL_PERMISO {
+        tinyint id_rol PK, FK
+        smallint id_permiso PK, FK
+    }
+
+    USUARIOS {
+        int id_usuario PK
+        varchar nombre
+        varchar login UK
+        varchar password_hash "password_hash()"
+        tinyint id_rol FK
+        tinyint activo
+        tinyint debe_cambiar_clave
+        datetime ultimo_acceso "NULL"
+        datetime creado_en
+    }
+
+    TARIFAS {
+        int id_tarifa PK
+        enum tipo_vehiculo "CARRO | MOTO"
+        enum categoria "ESTUDIANTE | PROFESOR"
+        decimal valor ">= 0"
+        datetime vigente_desde
+        datetime vigente_hasta "NULL = vigente"
+        tinyint activa
+        int creado_por FK
+        varchar tarifa_abierta UK "generada: una vigente por tipo y categoría"
+    }
+
+    VISITAS {
+        int id_visita PK
+        int id_estudiante FK
+        enum tipo_vehiculo "CARRO | MOTO"
+        enum categoria "copia de la persona"
+        int id_tarifa FK "FK compuesta con tipo y categoría"
+        decimal tarifa_aplicada "copia histórica"
+        datetime entrada_en
+        int entrada_por FK
+        datetime salida_en "NULL"
+        int salida_por FK "NULL"
+        enum estado "EN_CURSO | CERRADA | ANULADA"
+        datetime anulada_en "NULL"
+        int anulada_por FK "NULL"
+        varchar motivo_anulacion "NULL"
+        int visita_abierta UK "generada: una EN_CURSO por estudiante"
+    }
+
+    PAGOS {
+        int id_pago PK
+        int id_visita FK
+        decimal monto "= tarifa_aplicada"
+        datetime pagado_en
+        int registrado_por FK
+        enum medio_pago "EFECTIVO | TRANSFERENCIA | DATAFONO"
+        enum estado "PAGADO | ANULADO"
+        varchar consecutivo UK "R00000001"
+        varchar referencia "NULL"
+        datetime anulado_en "NULL"
+        int anulado_por FK "NULL"
+        varchar motivo_anulacion "NULL"
+        int pago_valido UK "generada: un PAGADO por visita"
+    }
+
+    CONSECUTIVOS {
+        varchar nombre PK "RECIBO"
+        int ultimo
+    }
+
+    AUDITORIA {
+        bigint id_auditoria PK
+        int id_usuario FK "NULL"
+        varchar accion
+        varchar entidad
+        bigint id_registro "NULL"
+        enum resultado "EXITO | DENEGADO | ERROR"
+        varchar motivo "NULL"
+        varchar ip_origen "NULL"
+        datetime creado_en
+        longtext detalle_json "NULL, JSON válido"
+    }
