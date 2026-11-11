@@ -6,6 +6,7 @@
 storage/logs/*
 storage/receipts/*
 storage/backups/*
+storage/push/*
 !storage/**/.gitkeep
 !storage/.htaccess
 
@@ -26,3 +27,21 @@ desktop.ini
 /dist/
 config/env.php
 storage/installed.lock
+
+# Configuración del instalador (contiene contraseñas) y capturas temporales del carril
+config/env.php
+storage/capturas/*
+
+# Pagos simulados de la copia de demostración
+storage/simulador/
+
+# Herramientas pesadas del video (se regeneran con brag-output/work/package.json)
+brag-output/work/node_modules/
+brag-output/work/vo/
+brag-output/work/vo_*/
+brag-output/work/stills/
+brag-output/work/*.wav
+brag-output/work/*.mp4
+
+# Material del video de presentación (no es parte del sistema; contiene la versión anterior con nombre institucional)
+brag-output/

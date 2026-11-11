@@ -5,17 +5,24 @@ namespace App\Repositories;
 
 final class VisitaRepository extends Repository
 {
+    // p: pago de una visita LEGADO · c/pc: cobro diario que cubre la visita y su pago válido.
     private const DETALLE = "SELECT v.*,
-                                    e.documento, e.nombres, e.apellidos,
+                                    e.documento, e.nombres, e.apellidos, e.saldo,
                                     ue.nombre AS entrada_por_nombre,
                                     us.nombre AS salida_por_nombre,
-                                    p.id_pago, p.consecutivo, p.pagado_en, p.medio_pago,
-                                    IF(p.id_pago IS NULL, 0, 1) AS pagada
+                                    COALESCE(p.id_pago, pc.id_pago) AS id_pago,
+                                    COALESCE(p.consecutivo, pc.consecutivo) AS consecutivo,
+                                    COALESCE(p.pagado_en, pc.pagado_en) AS pagado_en,
+                                    COALESCE(p.medio_pago, pc.medio_pago) AS medio_pago,
+                                    c.estado AS cobro_estado, c.valor AS cobro_valor, c.fecha AS cobro_fecha,
+                                    IF(p.id_pago IS NULL AND pc.id_pago IS NULL, 0, 1) AS pagada
                                FROM visitas v
                                JOIN estudiantes e ON e.id_estudiante = v.id_estudiante
                                JOIN usuarios ue   ON ue.id_usuario = v.entrada_por
                           LEFT JOIN usuarios us   ON us.id_usuario = v.salida_por
-                          LEFT JOIN pagos p       ON p.pago_valido = v.id_visita";
+                          LEFT JOIN pagos p       ON p.pago_valido = v.id_visita
+                          LEFT JOIN cobros_diarios c ON c.id_cobro = v.id_cobro
+                          LEFT JOIN pagos pc      ON pc.pago_cobro_valido = v.id_cobro";
 
     public function find(int $id, bool $bloquear = false): ?array
     {
@@ -33,22 +40,87 @@ final class VisitaRepository extends Repository
         return $this->one(self::DETALLE . ' WHERE v.visita_abierta = ?', [$idEstudiante]);
     }
 
-    public function create(int $idEstudiante, string $tipo, string $categoria, int $idTarifa, string $tarifa, int $usuario): int
+    /**
+     * Incidencias de cobro: visitas en curso cuya tolerancia ya venció y el proceso automático aún no
+     * liquidó (cron detenido, sin pantallas abiertas). Las resuelven Caja o Portería con «Procesar cobro».
+     */
+    public function incidenciasDeCobro(): array
     {
-        return $this->insert(
-            'INSERT INTO visitas (id_estudiante, tipo_vehiculo, categoria, id_tarifa, tarifa_aplicada, entrada_por)
-             VALUES (?, ?, ?, ?, ?, ?)',
-            [$idEstudiante, $tipo, $categoria, $idTarifa, $tarifa, $usuario]
+        return $this->all(
+            self::DETALLE . " WHERE v.estado = 'EN_CURSO' AND v.liquidacion = 'EN_TOLERANCIA' AND v.tolerancia_hasta <= NOW()
+                               ORDER BY v.tolerancia_hasta"
         );
     }
 
-    public function cerrar(int $id, int $usuario): int
+    /** Todas las visitas abiertas de una persona (un visitante puede tener varias). */
+    public function abiertasDePersona(int $idEstudiante): array
+    {
+        return $this->all(
+            self::DETALLE . " WHERE v.id_estudiante = ? AND v.estado = 'EN_CURSO' ORDER BY v.entrada_en",
+            [$idEstudiante]
+        );
+    }
+
+    /**
+     * Nueva visita. La tolerancia corre desde la hora de entrada del servidor.
+     * @param array{tipo:string,origen:string,categoria:string,id_tarifa:?int,tarifa:?string,liquidacion:string,id_cobro:?int} $d
+     */
+    public function create(int $idEstudiante, array $d, int $usuario): int
+    {
+        return $this->insert(
+            'INSERT INTO visitas (id_estudiante, tipo_vehiculo, tipo_origen, categoria, id_tarifa, tarifa_aplicada,
+                                  entrada_en, entrada_por, tolerancia_hasta, liquidacion, id_cobro, id_evento_entrada)
+             VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, NOW() + INTERVAL ? MINUTE, ?, ?, ?)',
+            [
+                $idEstudiante, $d['tipo'], $d['origen'], $d['categoria'], $d['id_tarifa'], $d['tarifa'],
+                $usuario, (int) config('tolerancia_minutos'), $d['liquidacion'], $d['id_cobro'], $d['id_evento'] ?? null,
+            ]
+        );
+    }
+
+    /** Cierra la visita. $liquidacion deja constancia de que salió dentro de la tolerancia. */
+    public function cerrar(int $id, int $usuario, ?string $liquidacion = null, ?int $idEvento = null): int
     {
         return $this->run(
-            "UPDATE visitas SET salida_en = NOW(), salida_por = ?, estado = 'CERRADA'
+            "UPDATE visitas SET salida_en = NOW(), salida_por = ?, estado = 'CERRADA',
+                    liquidacion = COALESCE(?, liquidacion), id_evento_salida = ?
               WHERE id_visita = ? AND estado = 'EN_CURSO'",
-            [$usuario, $id]
+            [$usuario, $liquidacion, $idEvento, $id]
         );
+    }
+
+    /** Resultado de la liquidación diaria de una visita en curso cuya tolerancia venció. */
+    public function liquidar(int $id, string $liquidacion, ?int $idCobro): int
+    {
+        return $this->run(
+            "UPDATE visitas SET liquidacion = ?, id_cobro = ?
+              WHERE id_visita = ? AND estado = 'EN_CURSO' AND liquidacion = 'EN_TOLERANCIA'",
+            [$liquidacion, $idCobro, $id]
+        );
+    }
+
+    /** Visitas en curso con la tolerancia vencida y sin procesar. @return list<int> */
+    public function vencidasSinLiquidar(int $limite = 200): array
+    {
+        $filas = $this->all(
+            "SELECT id_visita FROM visitas
+              WHERE estado = 'EN_CURSO' AND liquidacion = 'EN_TOLERANCIA' AND tolerancia_hasta <= NOW()
+              ORDER BY tolerancia_hasta
+              LIMIT " . max(1, $limite)
+        );
+        return array_map('intval', array_column($filas, 'id_visita'));
+    }
+
+    /** Visitas abiertas desde un día anterior que ya tienen cobro: sus días siguientes también se cobran. @return list<int> */
+    public function abiertasDeDiasAnteriores(int $limite = 200): array
+    {
+        $filas = $this->all(
+            "SELECT id_visita FROM visitas
+              WHERE estado = 'EN_CURSO' AND liquidacion IN ('COBRADA', 'DIFERENCIA', 'CUBIERTA') AND entrada_en < CURDATE()
+              ORDER BY entrada_en
+              LIMIT " . max(1, $limite)
+        );
+        return array_map('intval', array_column($filas, 'id_visita'));
     }
 
     public function anular(int $id, int $usuario, string $motivo): int
@@ -60,7 +132,7 @@ final class VisitaRepository extends Repository
         );
     }
 
-    /** Visitas abiertas sin pago confirmado (RF-09). */
+    /** Visitas LEGADO abiertas sin pago (RF-09). Las del esquema diario se cobran en cobros_diarios. */
     public function pendientesDePago(string $texto = ''): array
     {
         $params = [];
@@ -70,7 +142,7 @@ final class VisitaRepository extends Repository
             $params = [self::like($texto), self::like($texto)];
         }
         return $this->all(
-            self::DETALLE . " WHERE v.estado = 'EN_CURSO' AND p.id_pago IS NULL $filtro ORDER BY v.entrada_en",
+            self::DETALLE . " WHERE v.estado = 'EN_CURSO' AND v.liquidacion = 'LEGADO' AND p.id_pago IS NULL $filtro ORDER BY v.entrada_en",
             $params
         );
     }
@@ -91,29 +163,38 @@ final class VisitaRepository extends Repository
         return $this->all(self::DETALLE . " WHERE v.estado = 'EN_CURSO' $filtro ORDER BY v.entrada_en", $params);
     }
 
-    /** @return array{CARRO:int,MOTO:int,pendientes:int} */
+    /** @return array{CARRO:int,MOTO:int,BICICLETA:int,PATINETA:int,visitantes:int,tolerancia:int,pendientes:int} */
     public function ocupacion(): array
     {
         $fila = $this->one(
             "SELECT SUM(v.tipo_vehiculo = 'CARRO') AS carros,
                     SUM(v.tipo_vehiculo = 'MOTO') AS motos,
-                    SUM(p.id_pago IS NULL) AS pendientes
+                    SUM(v.tipo_vehiculo = 'BICICLETA') AS bicicletas,
+                    SUM(v.tipo_vehiculo = 'PATINETA') AS patinetas,
+                    SUM(v.categoria = 'VISITANTE') AS visitantes,
+                    SUM(v.liquidacion = 'EN_TOLERANCIA') AS tolerancia,
+                    SUM((v.liquidacion = 'LEGADO' AND p.id_pago IS NULL) OR c.estado = 'PENDIENTE') AS pendientes
                FROM visitas v
           LEFT JOIN pagos p ON p.pago_valido = v.id_visita
+          LEFT JOIN cobros_diarios c ON c.id_cobro = v.id_cobro
               WHERE v.estado = 'EN_CURSO'"
         );
         return [
             'CARRO'      => (int) ($fila['carros'] ?? 0),
             'MOTO'       => (int) ($fila['motos'] ?? 0),
+            'BICICLETA'  => (int) ($fila['bicicletas'] ?? 0),
+            'PATINETA'   => (int) ($fila['patinetas'] ?? 0),
+            'visitantes' => (int) ($fila['visitantes'] ?? 0),
+            'tolerancia' => (int) ($fila['tolerancia'] ?? 0),
             'pendientes' => (int) ($fila['pendientes'] ?? 0),
         ];
     }
 
-    /** Historial de un estudiante con todos sus pagos, válidos y anulados (RF-15). */
-    public function historialEstudiante(int $idEstudiante): array
+    /** Historial de una persona con todos sus pagos, válidos y anulados (RF-15). */
+    public function historialEstudiante(int $idEstudiante, int $limite = 500): array
     {
         $visitas = $this->all(
-            self::DETALLE . ' WHERE v.id_estudiante = ? ORDER BY v.entrada_en DESC',
+            self::DETALLE . ' WHERE v.id_estudiante = ? ORDER BY v.entrada_en DESC LIMIT ' . max(1, $limite),
             [$idEstudiante]
         );
         if (!$visitas) {
@@ -122,7 +203,7 @@ final class VisitaRepository extends Repository
         $ids = array_column($visitas, 'id_visita');
         $marcas = implode(',', array_fill(0, count($ids), '?'));
         $pagos = $this->all(
-            "SELECT p.*, u.nombre AS cajero FROM pagos p JOIN usuarios u ON u.id_usuario = p.registrado_por
+            "SELECT p.*, u.nombre AS cajero FROM pagos p LEFT JOIN usuarios u ON u.id_usuario = p.registrado_por
               WHERE p.id_visita IN ($marcas) ORDER BY p.pagado_en",
             $ids
         );
@@ -160,9 +241,9 @@ final class VisitaRepository extends Repository
             $params[] = (int) $f['usuario'];
         }
         if (($f['pago'] ?? '') === 'si') {
-            $where[] = 'p.id_pago IS NOT NULL';
+            $where[] = '(p.id_pago IS NOT NULL OR pc.id_pago IS NOT NULL)';
         } elseif (($f['pago'] ?? '') === 'no') {
-            $where[] = 'p.id_pago IS NULL';
+            $where[] = '(p.id_pago IS NULL AND pc.id_pago IS NULL)';
         }
         $sql = self::DETALLE . ($where ? ' WHERE ' . implode(' AND ', $where) : '')
             . ' ORDER BY v.entrada_en DESC LIMIT ' . (int) $limite;

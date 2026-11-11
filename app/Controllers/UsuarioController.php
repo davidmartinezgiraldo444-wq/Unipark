@@ -26,9 +26,10 @@ final class UsuarioController extends Controller
 
     public function crear(Request $request): Response
     {
-        $datos = ['nombre' => $request->input('nombre'), 'login' => $request->input('login'), 'id_rol' => $request->input('id_rol')];
+        $datos = ['nombre' => $request->input('nombre'), 'login' => $request->input('login'), 'id_rol' => $request->input('id_rol'),
+                  'persona_documento' => $request->input('persona_documento')];
         try {
-            $r = (new ServicioUsuario($this->db()))->crear($datos['nombre'], $datos['login'], (int) $datos['id_rol']);
+            $r = (new ServicioUsuario($this->db()))->crear($datos['nombre'], $datos['login'], (int) $datos['id_rol'], $datos['persona_documento']);
         } catch (ReglaNegocioException $e) {
             return $this->form(null, $datos, $e->getMessage(), 422);
         }
@@ -49,9 +50,10 @@ final class UsuarioController extends Controller
         if ($usuario === null) {
             return $this->notFound();
         }
-        $datos = ['nombre' => $request->input('nombre'), 'id_rol' => $request->input('id_rol')] + $usuario;
+        $datos = ['nombre' => $request->input('nombre'), 'id_rol' => $request->input('id_rol'),
+                  'persona_documento' => $request->input('persona_documento')] + $usuario;
         try {
-            (new ServicioUsuario($this->db()))->actualizar($id, $datos['nombre'], (int) $datos['id_rol'], $this->usuarioId());
+            (new ServicioUsuario($this->db()))->actualizar($id, $datos['nombre'], (int) $datos['id_rol'], $this->usuarioId(), $datos['persona_documento']);
         } catch (ReglaNegocioException $e) {
             return $this->form($usuario, $datos, $e->getMessage(), 422);
         }

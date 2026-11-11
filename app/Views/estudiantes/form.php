@@ -30,13 +30,14 @@ $campo = static function (string $nombre, string $etiqueta, array $attrs = []) u
       <div class="field">
         <label for="categoria">Categoría</label>
         <select id="categoria" name="categoria" required<?= isset($errores['categoria']) ? ' aria-invalid="true"' : '' ?>>
-          <?php foreach (\App\Services\ReglasVisita::CATEGORIAS as $cat): ?>
+          <?php foreach (array_merge(\App\Services\ReglasVisita::CATEGORIAS, [\App\Services\ReglasVisita::VISITANTE]) as $cat): ?>
             <option value="<?= e($cat) ?>" <?= old($datos, 'categoria', 'ESTUDIANTE') === $cat ? 'selected' : '' ?>><?= e(categoria_label($cat)) ?></option>
           <?php endforeach; ?>
         </select>
-        <span class="field-hint">Define la tarifa que se cobra en cada visita.</span>
+        <span class="field-hint">Define la tarifa diaria. Los visitantes no pagan.</span>
         <?php if (isset($errores['categoria'])): ?><span class="field-error"><?= e($errores['categoria']) ?></span><?php endif; ?>
       </div>
+      <?= $campo('codigo_carnet', 'Código de barras del carnet (opcional)', ['type' => 'text', 'maxlength' => '40', 'autocomplete' => 'off']) ?>
       <?= $campo('nombres', 'Nombres', ['type' => 'text', 'maxlength' => '80', 'required' => true, 'autocomplete' => 'off']) ?>
       <?= $campo('apellidos', 'Apellidos', ['type' => 'text', 'maxlength' => '80', 'required' => true, 'autocomplete' => 'off']) ?>
       <?= $campo('correo', 'Correo (opcional)', ['type' => 'email', 'maxlength' => '120', 'autocomplete' => 'off']) ?>

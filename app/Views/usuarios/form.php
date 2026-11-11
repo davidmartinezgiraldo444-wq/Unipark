@@ -45,6 +45,12 @@ $accion = $usuario ? url('usuarios/' . $usuario['id_usuario']) : url('usuarios')
           <span class="field-hint">No puedes cambiar tu propio rol.</span>
         <?php endif; ?>
       </div>
+      <div class="field">
+        <label for="persona_documento">Documento de la persona <span class="muted">(roles Estudiante, Profesor y Trabajador)</span></label>
+        <input id="persona_documento" name="persona_documento" type="text" inputmode="numeric" maxlength="20" autocomplete="off"
+               value="<?= e(old($datos, 'persona_documento')) ?>">
+        <span class="field-hint">Vincula la cuenta con su registro: verá su saldo, sus cobros diarios y recibirá los avisos.</span>
+      </div>
     </div>
     <div class="form-actions">
       <button class="btn btn-ink" type="submit"><?= $usuario ? 'Guardar cambios' : 'Crear cuenta' ?></button>

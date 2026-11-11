@@ -1,5 +1,5 @@
 {
-    "name": "lasallista/unipark",
+    "name": "unipark/unipark",
     "description": "Sistema de control de acceso y operación del parqueadero universitario.",
     "type": "project",
     "require": {

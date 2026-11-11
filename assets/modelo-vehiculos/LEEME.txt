@@ -1,0 +1,17 @@
+Modelo de Teachable Machine para reconocer el tipo de vehículo
+==============================================================
+
+Copia aquí los tres archivos que exporta Teachable Machine (Exportar modelo → TensorFlow.js → Descargar):
+
+    model.json
+    metadata.json
+    weights.bin
+
+Nombres de clase que reconoce UniPark (sin importar tildes ni mayúsculas):
+    Motocicleta · Automovil · Bicicleta · Patineta · (opcional) Ninguno
+
+Patineta = solo scooter (de pie, con manubrio, manual o eléctrico). Los skateboards NO son
+patineta: no los pongas en esa clase (si aparecen, el sistema da Desconocido y Portería decide).
+
+Mientras esta carpeta no tenga model.json, las pantallas de cámara usan el modelo
+preentrenado COCO-SSD. Guía completa: docs/integracion-celulares-ia.md

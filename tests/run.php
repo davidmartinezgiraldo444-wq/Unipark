@@ -26,6 +26,8 @@ if ($basePruebas === $baseApp) {
     exit(1);
 }
 putenv('DB_NAME=' . $basePruebas);
+// Los logs de las pruebas van a storage/logs/pruebas, nunca al log del sistema real (hallazgo B11).
+App\Helpers\Logger::usarCanal('pruebas');
 
 spl_autoload_register(static function (string $clase): void {
     if (str_starts_with($clase, 'Tests\\')) {

@@ -1,0 +1,8 @@
+# UniPark - Modelo propio de Teachable Machine (model.json, metadata.json, weights.bin).
+# El .htaccess principal niega los .json; aqui se permiten SOLO estos tres archivos del modelo.
+<FilesMatch "^(model|metadata)\.json$">
+    Require all granted
+</FilesMatch>
+<FilesMatch "\.bin$">
+    Require all granted
+</FilesMatch>

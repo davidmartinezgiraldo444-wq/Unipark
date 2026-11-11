@@ -6,9 +6,15 @@ $rutaActual = '/' . trim((string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_
 
 // Menú: solo se muestra lo que el rol puede usar; el servidor vuelve a verificarlo en cada ruta.
 $grupos = [
+    'Mi parqueadero' => [
+        ['mi-cuenta',   'Mi cuenta',      can('CUENTA_PROPIA')],
+        ['mi-saldo',    'Mi saldo',       can('CUENTA_PROPIA')],
+    ],
     'Operación' => [
-        ['panel',       'Panel',          true],
+        ['panel',       'Panel',          !can('CUENTA_PROPIA') || can('ENTRADA_CREAR', 'PAGO_REGISTRAR', 'REPORTE_OPERATIVO')],
         ['porteria',    'Portería',       can('ENTRADA_CREAR', 'SALIDA_AUTORIZAR')],
+        ['porteria/escaner', 'Escáner (celular)', can('ENTRADA_CREAR', 'SALIDA_AUTORIZAR')],
+        ['porteria/camara',  'Cámara de vehículos', can('ENTRADA_CREAR')],
         ['caja',        'Caja',           can('PAGO_REGISTRAR')],
         ['caja/cierre', 'Cierre de caja', can('CAJA_CIERRE')],
     ],
@@ -38,6 +44,7 @@ $iniciales = $usuario ? mb_strtoupper(implode('', array_map(
 <?php require __DIR__ . '/head.php'; ?>
 </head>
 <body class="app">
+<?php require __DIR__ . '/demo_banner.php'; ?>
 
   <aside class="sidebar">
     <a class="brand brand-sm" href="<?= e(url('panel')) ?>">

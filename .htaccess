@@ -7,6 +7,9 @@
 Options -Indexes
 DirectoryIndex index.php
 
+# Manifiesto de la app instalable (avisos push en el celular).
+AddType application/manifest+json .webmanifest
+
 # Archivos ocultos, de configuración, datos y documentación: nunca por la web.
 <FilesMatch "(^\.|\.(env|sql|md|mmd|log|lock|sh|bat|ini|json|txt)$)">
     Require all denied

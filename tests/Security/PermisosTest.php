@@ -64,17 +64,19 @@ final class PermisosTest extends TestCase
         foreach (['/panel', '/porteria', '/caja', '/reportes', '/auditoria', '/estudiantes/1'] as $ruta) {
             $r = $this->solicitud('GET', $ruta);
             $this->assertSame(303, $r->status, $ruta);
-            $this->assertSame('/login', $r->headers['Location'] ?? null, $ruta);
+            // Lleva al login y, tras ingresar, de vuelta a la pantalla pedida (el panel es el destino por defecto).
+            $esperada = '/login' . ($ruta === '/panel' ? '' : '?volver=' . rawurlencode(ltrim($ruta, '/')));
+            $this->assertSame($esperada, $r->headers['Location'] ?? null, $ruta);
         }
     }
 
     public function testCP09UsuarioInactivoNoPuedeIniciarSesion(): void
     {
         $auth = new AuthService($this->db());
-        $e = $this->assertRegla('CREDENCIALES', fn () => $auth->intentar('inactivo', 'Demo2026*', '127.0.0.1'));
+        $e = $this->assertRegla('CREDENCIALES', fn () => $auth->intentar('inactivo', 'demo2026*', '127.0.0.1'));
         $this->assertSame(AuthService::MENSAJE_GENERICO, $e->getMessage(), 'Mensaje genérico, no revela que la cuenta existe');
 
-        $r = $this->solicitud('POST', '/login', ['login' => 'inactivo', 'clave' => 'Demo2026*']);
+        $r = $this->solicitud('POST', '/login', ['login' => 'inactivo', 'clave' => 'demo2026*']);
         $this->assertSame(401, $r->status);
     }
 
@@ -95,7 +97,7 @@ final class PermisosTest extends TestCase
         $_SESSION['ultima_actividad'] = time() - (int) config('sesion_inactividad') - 1;
         $r = $this->solicitud('GET', '/caja');
         $this->assertSame(303, $r->status);
-        $this->assertSame('/login?expirado=1', $r->headers['Location'] ?? null);
+        $this->assertSame('/login?expirado=1&volver=caja', $r->headers['Location'] ?? null);
     }
 
     public function testMensajeGenericoYLimiteDeIntentos(): void
@@ -111,13 +113,13 @@ final class PermisosTest extends TestCase
             } catch (ReglaNegocioException) {
             }
         }
-        $this->assertRegla('BLOQUEADO', fn () => $auth->intentar('caja', 'Demo2026*', '10.0.0.9'));
+        $this->assertRegla('BLOQUEADO', fn () => $auth->intentar('caja', 'demo2026*', '10.0.0.9'));
     }
 
     public function testLoginCorrectoRegeneraLaSesionYAuditaElIngreso(): void
     {
         $_SESSION['_csrf'] = 'token-anterior';
-        $r = $this->solicitud('POST', '/login', ['login' => 'caja', 'clave' => 'Demo2026*', '_csrf' => 'token-anterior']);
+        $r = $this->solicitud('POST', '/login', ['login' => 'caja', 'clave' => 'demo2026*', '_csrf' => 'token-anterior']);
         $this->assertSame(303, $r->status);
         $this->assertSame('/caja', $r->headers['Location'] ?? null, 'Caja inicia en su panel');
         $this->assertSame(3, $_SESSION['id_usuario'] ?? null);
@@ -145,6 +147,8 @@ final class PermisosTest extends TestCase
     {
         $servicio = new \App\Services\ServicioUsuario($this->db());
         $this->assertRegla('PROPIA_CUENTA', fn () => $servicio->cambiarEstado(1, false, 1));
+        // Con datos de demostración hay dos administradores: se desactiva admin2 y queda solo admin.
+        $servicio->cambiarEstado((int) $this->valor("SELECT id_usuario FROM usuarios WHERE login = 'admin2'"), false, 1);
         $this->assertRegla('ULTIMO_ADMIN', fn () => $servicio->cambiarEstado(1, false, 4));
     }
 }

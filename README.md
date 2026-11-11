@@ -1,20 +1,24 @@
 # UniPark
 
 Sistema de control de acceso y operación del parqueadero universitario.
-Corporación Universitaria Lasallista · Bases de Datos.
+Proyecto académico · Bases de Datos.
 
-Portería registra la entrada, Caja confirma el pago y la salida solo se autoriza cuando ese pago existe. La tarifa es fija por visita según el vehículo y la categoría de la persona. No se guarda placa ni foto, y cada operación queda registrada con el funcionario responsable.
+Portería escanea el carnet con el celular y la cámara reconoce el tipo de vehículo con IA. Hay 15 minutos de tolerancia sin cobro; después se cobra **una sola vez por día** según el rol y el vehículo, y el valor se descuenta del saldo **antes** de llegar a la salida (si no alcanza, queda pendiente en Caja y llega un aviso al celular). La salida solo consulta si está pagado. Los visitantes no pagan. No se guarda placa, color ni foto, y cada operación queda registrada con el funcionario responsable.
 
 **Stack:** PHP 8 (sin frameworks ni dependencias) · MySQL/MariaDB (InnoDB) · HTML, CSS y JavaScript.
 
 ## Tarifas
 
-| Vehículo | Estudiante | Profesor |
-|---|---|---|
-| Carro | $ 2.050 | $ 2.800 |
-| Moto | $ 1.050 | $ 1.800 |
+Valor **por día** (COP), después de 15 minutos de tolerancia:
 
-El Administrador las cambia desde el módulo **Tarifas**. Las visitas ya registradas conservan el valor que se les aplicó.
+| Vehículo | Estudiante | Profesor | Trabajador |
+|---|---|---|---|
+| Automóvil | $ 2.000 | $ 3.000 | $ 3.000 |
+| Motocicleta | $ 1.000 | $ 2.000 | $ 2.000 |
+
+Si el mismo día usa un vehículo de tarifa mayor, se cobra solo la diferencia (el día vale la tarifa más alta). La bicicleta se registra sin tarifa (la patineta está deshabilitada: decisión pendiente, ver docs/flujo-acceso-definitivo.md). Visitantes: sin cobro. El Administrador cambia los valores en **Tarifas**; las visitas ya registradas conservan el valor que se les aplicó.
+
+Novedades de esta versión, decisiones y pendientes: [`docs/ENTREGA_ACTUALIZACION.md`](docs/ENTREGA_ACTUALIZACION.md) · celulares, carnets e IA: [`docs/integracion-celulares-ia.md`](docs/integracion-celulares-ia.md).
 
 ## Instalación en XAMPP
 
@@ -22,7 +26,7 @@ El Administrador las cambia desde el módulo **Tarifas**. Las visitas ya registr
 2. Descomprime `UniPark.zip` en `C:\xampp\htdocs\`. Queda `C:\xampp\htdocs\UniPark\index.php`.
 3. Abre <http://localhost/UniPark/>. Se muestra el **instalador**.
 4. Escribe los datos de MySQL (en XAMPP: `127.0.0.1`, puerto `3306`, usuario `root`, sin contraseña) y pulsa **Instalar UniPark**.
-5. Ingresa con `admin` / `Demo2026*`.
+5. Ingresa con `admin` / `demo2026*`.
 
 El instalador crea la base de datos, las tablas con sus reglas, una cuenta de MySQL con privilegios mínimos para la aplicación y, si lo eliges, datos de demostración. Al terminar se bloquea solo.
 
@@ -38,21 +42,30 @@ Guía completa, actualización, acceso por túnel (ngrok o Cloudflare) y problem
 
 ## Cuentas iniciales
 
-Todas usan la contraseña **`Demo2026*`**. Cada persona puede cambiarla desde **Cambiar contraseña**, en la parte inferior del menú.
+Todas usan la contraseña **`demo2026*`**. Cada persona puede cambiarla desde **Cambiar contraseña**, en la parte inferior del menú.
 
 | Usuario | Rol | Se crea |
 |---|---|---|
 | `admin` | Administrador | Siempre |
-| `porteria` | Portería | Con datos de demostración |
-| `caja`, `caja2` | Caja | Con datos de demostración |
-| `auditor` | Auditor | Con datos de demostración |
+| `admin2` | Administrador | Con datos de demostración |
+| `porteria`, `porteria2`, `porteria3` | Portería | Con datos de demostración |
+| `caja`, `caja2`, `caja3` | Caja | Con datos de demostración |
+| `auditor`, `auditor2` | Auditor | Con datos de demostración |
+| `estudiante1`, `estudiante2`, `estudiante3` | Estudiante (Mi cuenta) | Con datos de demostración |
+| `profesor1`, `profesor2`, `profesor3` | Profesor (Mi cuenta) | Con datos de demostración |
+| `trabajador1`, `trabajador2`, `trabajador3` | Trabajador (Mi cuenta) | Con datos de demostración |
+
+**Actualizar una base existente** a esta versión: `C:
+mpp\php\php.exe scripts\migrar.php --demo` (hace respaldo antes).
 
 ## Funcionalidades
 
 | Módulo | Rol | Qué hace |
 |---|---|---|
-| Portería | Portería | Busca por documento, registra entradas (carro o moto) con la tarifa de la categoría y autoriza salidas solo con pago confirmado |
-| Caja | Caja | Cola de pendientes, cobro por el valor exacto, comprobante con consecutivo y cierre de caja con arqueo |
+| Portería y Escáner (celular) | Portería | Lee carnets y cédulas con la cámara (ZXing), reconoce el vehículo con IA (TensorFlow.js), registra visitantes y autoriza la salida consultando el pago |
+| Cámara de vehículos | Portería | Segundo celular fijo que reconoce el vehículo del carril y publica solo su tipo |
+| Mi cuenta | Estudiante, Profesor, Trabajador | Saldo, cobro de hoy y tolerancia en vivo, historial, carnet digital y avisos push |
+| Caja | Caja | Cobros diarios pendientes, recargas de saldo, comprobante con consecutivo y cierre de caja con arqueo (incluye recargas) |
 | Estudiantes y profesores | Administrador (consulta: todos) | Registro con documento único, categoría e historial de visitas y pagos |
 | Usuarios | Administrador | Cuentas individuales, roles, contraseñas temporales, activación y desactivación |
 | Tarifas | Administrador | Valor fijo por vehículo y categoría, con historial de vigencias |
@@ -79,7 +92,7 @@ Probado con solicitudes simultáneas reales: 6 procesos para entradas y 5 para p
 C:\xampp\php\php.exe tests\run.php
 ```
 
-Resultado actual: **78 pruebas, 0 fallidas**. Cubren los criterios de aceptación CP-01 a CP-14 y las tarifas por categoría. Requieren preparar antes la base de pruebas; ver [`tests/README.md`](tests/README.md).
+Resultado actual (08/11/2026): **147 pruebas, 0 fallidas** ([evidencia](docs/evidencias/resultado-pruebas-2026-11-08.txt)). Cubren los criterios de aceptación CP-01 a CP-14 y las tarifas por categoría. Requieren preparar antes la base de pruebas; ver [`tests/README.md`](tests/README.md).
 
 ## Estructura
 

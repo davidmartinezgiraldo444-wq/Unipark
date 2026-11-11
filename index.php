@@ -32,8 +32,14 @@ if (!Instalador::instalado()) {
 }
 
 try {
-    Session::start();
-    $respuesta = (new Kernel())->handle(Request::fromGlobals($base));
+    $request = Request::fromGlobals($base);
+    // Webhook y regreso desde la pasarela: sin sesión (no se envía Set-Cookie). Ver app/routes.php.
+    if (Kernel::sinSesion($request->method, $request->path)) {
+        $_SESSION = [];
+    } else {
+        Session::start();
+    }
+    $respuesta = (new Kernel())->handle($request);
 } catch (Throwable $e) {
     Logger::error($e->getMessage(), ['tipo' => $e::class, 'archivo' => $e->getFile() . ':' . $e->getLine()]);
     $respuesta = Response::html(View::render('errors/error', [

@@ -9,13 +9,20 @@ namespace App\Services;
  */
 final class ReglasVisita
 {
-    public const TIPOS = ['CARRO', 'MOTO'];
-    public const CATEGORIAS = ['ESTUDIANTE', 'PROFESOR'];
+    /** Tipos de vehículo que se registran (los que reconoce la IA). */
+    public const TIPOS = ['CARRO', 'MOTO', 'BICICLETA', 'PATINETA'];
+    /** Solo carro y moto tienen tarifa definida. */
+    public const TIPOS_TARIFABLES = ['CARRO', 'MOTO'];
+    /** Categorías de personas registradas por la universidad (todas con tarifa). */
+    public const CATEGORIAS = ['ESTUDIANTE', 'PROFESOR', 'TRABAJADOR'];
+    /** Documento no registrado: se registra, no paga. */
+    public const VISITANTE = 'VISITANTE';
 
     public const MENSAJES = [
         'SIN_VISITA'        => 'No existe la visita indicada.',
         'VISITA_NO_ABIERTA' => 'La visita ya está cerrada o anulada.',
         'PAGO_PENDIENTE'    => 'Pago pendiente. Diríjase a Caja.',
+        'COBRO_SIN_PROCESAR' => 'Incidencia: el cobro automático de esta visita no se ha procesado. Retírese del carril; Caja o Portería la resuelve.',
         'PAGO_OTRA_VISITA'  => 'El pago no corresponde a esta visita.',
         'PAGO_DUPLICADO'    => 'Esta visita ya tiene un pago confirmado.',
         'MONTO_DISTINTO'    => 'El monto no coincide con la tarifa aplicada a la visita.',
@@ -24,6 +31,11 @@ final class ReglasVisita
     public static function tipoValido(string $tipo): bool
     {
         return in_array($tipo, self::TIPOS, true);
+    }
+
+    public static function tipoTarifable(string $tipo): bool
+    {
+        return in_array($tipo, self::TIPOS_TARIFABLES, true);
     }
 
     public static function categoriaValida(string $categoria): bool

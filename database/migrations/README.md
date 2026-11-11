@@ -32,4 +32,9 @@ Cuando el sistema ya tenga datos reales, los cambios al esquema se aplican con *
 
 | Archivo | Fecha de aplicación | Aplicada por |
 |---|---|---|
-| *(ninguna aún: la versión 1.0 se instala con `schema.sql`)* | | |
+| `20261107_1200_personas_cuentas_saldo.sql` a `20261107_1240_demo_usuarios_prueba.sql` | 07/11/2026 (`unipark_db` local) | `scripts/migrar.php --demo` |
+| `20261107_1300_cobro_diferencia_vehiculo.sql` | 07/11/2026 (`unipark_db` local) | `scripts/migrar.php --demo` |
+| `20261108_0900` a `20261108_0920` | 08/11/2026 (`unipark_db` local) | `scripts/migrar.php --demo` |
+| `20261108_1000_debito_unico_por_pago.sql` y `20261108_1010_recargas_en_linea.sql` | 08/11/2026 22:04 (`unipark_db` local) | `scripts/migrar.php` (ver docs/fase1-validacion-migraciones.md) |
+
+Las migraciones se aplican con `php scripts/migrar.php` (respaldo previo, registro en la tabla `migraciones` y privilegios mínimos). Los archivos `*_demo_*` solo se aplican con `--demo`.

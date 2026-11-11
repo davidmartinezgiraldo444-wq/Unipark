@@ -89,3 +89,7 @@
     </div>
   <?php endif; ?>
 </section>
+
+<?php if (can('REPORTE_CAJA', 'COBRO_ANULAR', 'SALDO_REVERSAR')): ?>
+  <?php require __DIR__ . '/_finanzas.php'; ?>
+<?php endif; ?>

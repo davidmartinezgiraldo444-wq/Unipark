@@ -32,11 +32,11 @@ final class VistasTest extends TestCase
     {
         $this->iniciarComo('porteria');
         $profesor = $this->solicitud('GET', '/porteria?documento=1000000011')->body;
-        $this->assertContains('$ 2.800', $profesor, 'Carro profesor');
-        $this->assertContains('$ 1.800', $profesor, 'Moto profesor');
+        $this->assertContains('$ 3.000', $profesor, 'Carro profesor');
+        $this->assertContains('$ 2.000', $profesor, 'Moto profesor');
         $estudiante = $this->solicitud('GET', '/porteria?documento=1000000009')->body;
-        $this->assertContains('$ 2.050', $estudiante, 'Carro estudiante');
-        $this->assertContains('$ 1.050', $estudiante, 'Moto estudiante');
+        $this->assertContains('$ 2.000', $estudiante, 'Carro estudiante');
+        $this->assertContains('$ 1.000', $estudiante, 'Moto estudiante');
     }
 
     public function testLaRaizAbreElAccesoOElPanel(): void
@@ -54,7 +54,7 @@ final class VistasTest extends TestCase
         $r = $this->solicitud('GET', '/inicio');
         $this->assertSame(200, $r->status);
         $this->assertContains('Entrada, pago y salida.', $r->body);
-        $this->assertContains('$ 2.800', $r->body, 'Muestra las tarifas vigentes');
+        $this->assertContains('$ 3.000', $r->body, 'Muestra las tarifas vigentes');
     }
 
     public function testLosRecursosLlevanVersionParaEvitarCacheVieja(): void

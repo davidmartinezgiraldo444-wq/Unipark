@@ -26,7 +26,8 @@ final class EntradaTest extends TestCase
         $this->assertSame('9', $visita['id_estudiante']);
         $this->assertSame('CARRO', $visita['tipo_vehiculo']);
         $this->assertSame('ESTUDIANTE', $visita['categoria']);
-        $this->assertSame('2050.00', $visita['tarifa_aplicada'], 'Copia la tarifa vigente de carro para estudiante');
+        $this->assertSame('2000.00', $visita['tarifa_aplicada'], 'Copia la tarifa diaria vigente de carro para estudiante');
+        $this->assertSame('EN_TOLERANCIA', $visita['liquidacion'], 'Empieza la tolerancia');
         $this->assertSame((string) self::PORTERIA, $visita['entrada_por'], 'Registra el funcionario');
         $this->assertTrue($visita['entrada_en'] !== null && $visita['salida_en'] === null);
 
@@ -93,7 +94,7 @@ final class EntradaTest extends TestCase
 
         $servicio = new ServicioEntrada($this->db());
         $this->assertSame('2500.00', $servicio->registrar(10, 'CARRO', self::PORTERIA)['tarifa_aplicada'], 'Las nuevas entradas de estudiantes usan la nueva tarifa');
-        $this->assertSame('2800.00', $servicio->registrar(11, 'CARRO', self::PORTERIA)['tarifa_aplicada'], 'La tarifa de profesor no cambia');
+        $this->assertSame('3000.00', $servicio->registrar(11, 'CARRO', self::PORTERIA)['tarifa_aplicada'], 'La tarifa de profesor no cambia');
     }
 
     public function testCP10LaBaseImpideEditarLaTarifaAplicada(): void
@@ -113,11 +114,11 @@ final class EntradaTest extends TestCase
         $servicio = new ServicioEntrada($this->db());
         $moto = $servicio->registrar(11, 'MOTO', self::PORTERIA);
         $this->assertSame('PROFESOR', $moto['categoria']);
-        $this->assertSame('1800.00', $moto['tarifa_aplicada'], 'Moto profesor');
+        $this->assertSame('2000.00', $moto['tarifa_aplicada'], 'Moto profesor');
 
-        $this->assertSame('1050.00', $servicio->registrar(9, 'MOTO', self::PORTERIA)['tarifa_aplicada'], 'Moto estudiante');
-        $this->assertSame('2050.00', $servicio->registrar(10, 'CARRO', self::PORTERIA)['tarifa_aplicada'], 'Carro estudiante');
-        $this->assertSame('2800.00', $this->valor('SELECT tarifa_aplicada FROM visitas WHERE id_visita = 7'), 'Carro profesor (seed)');
+        $this->assertSame('1000.00', $servicio->registrar(9, 'MOTO', self::PORTERIA)['tarifa_aplicada'], 'Moto estudiante');
+        $this->assertSame('2000.00', $servicio->registrar(10, 'CARRO', self::PORTERIA)['tarifa_aplicada'], 'Carro estudiante');
+        $this->assertSame('2800.00', $this->valor('SELECT tarifa_aplicada FROM visitas WHERE id_visita = 7'), 'Carro profesor (visita del esquema anterior)');
     }
 
     public function testLaBaseImpideUsarLaTarifaDeOtraCategoria(): void
@@ -137,7 +138,7 @@ final class EntradaTest extends TestCase
         $servicio = new ServicioEntrada($this->db());
         $this->assertRegla('ESTUDIANTE_NO_DISPONIBLE', fn () => $servicio->registrar(12, 'CARRO', self::PORTERIA));
         $this->assertRegla('ESTUDIANTE_NO_DISPONIBLE', fn () => $servicio->registrar(9999, 'CARRO', self::PORTERIA));
-        $this->assertRegla('TIPO_INVALIDO', fn () => $servicio->registrar(9, 'BICICLETA', self::PORTERIA));
+        $this->assertRegla('TIPO_INVALIDO', fn () => $servicio->registrar(9, 'AVION', self::PORTERIA));
         $this->assertSame(0, (int) $this->valor('SELECT COUNT(*) FROM visitas WHERE id_estudiante IN (9, 12)'));
     }
 
@@ -145,7 +146,7 @@ final class EntradaTest extends TestCase
     {
         // El estudiante 1 tiene visitas cerradas: la restricción solo aplica a visitas EN_CURSO.
         $visita = (new ServicioEntrada($this->db()))->registrar(1, 'MOTO', self::PORTERIA);
-        $this->assertSame('1050.00', $visita['tarifa_aplicada']);
+        $this->assertSame('1000.00', $visita['tarifa_aplicada']);
         $this->assertSame(3, (int) $this->valor('SELECT COUNT(*) FROM visitas WHERE id_estudiante = 1'), 'Dos visitas cerradas y la nueva');
     }
 

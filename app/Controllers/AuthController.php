@@ -14,19 +14,25 @@ final class AuthController extends Controller
 {
     public function form(Request $request): Response
     {
+        $volver = volver_seguro($request->query('volver'));
         if (Session::get('id_usuario')) {
-            return $this->redirect('panel');
+            return $this->redirect($volver ?? 'panel');
         }
         $aviso = match (true) {
             $request->query('expirado') !== '' => 'Tu sesión expiró por inactividad. Ingresa de nuevo.',
             $request->query('salida') !== ''   => 'Cerraste sesión correctamente.',
+            $volver !== null                   => 'Ingresa para continuar.',
             default                            => null,
         };
-        return $this->view('auth/login', ['titulo' => 'Iniciar sesión', 'aviso' => $aviso, 'error' => null, 'login' => ''], 'layouts/auth');
+        return $this->view('auth/login', ['titulo' => 'Iniciar sesión', 'aviso' => $aviso, 'error' => null, 'login' => '', 'volver' => $volver], 'layouts/auth');
     }
+
+    /** Ruta segura a la que volver tras iniciar sesión (se conserva si el intento falla). */
+    private ?string $volver = null;
 
     public function login(Request $request): Response
     {
+        $this->volver = volver_seguro($request->input('volver'));
         $login = mb_strtolower($request->input('login'));
         $clave = $request->raw('clave');
 
@@ -47,6 +53,10 @@ final class AuthController extends Controller
         $auth->iniciarSesion($usuario);
         if ((int) $usuario['debe_cambiar_clave'] === 1) {
             return $this->redirect('cambiar-clave');
+        }
+        // Regreso a la página que se pidió (solo rutas internas seguras); el permiso se verifica allí de nuevo.
+        if ($this->volver !== null) {
+            return $this->redirect($this->volver);
         }
         $inicio = (require BASE_PATH . '/config/permissions.php')['inicio'];
         return $this->redirect($inicio[$usuario['rol']] ?? 'panel');
@@ -84,6 +94,6 @@ final class AuthController extends Controller
 
     private function formError(string $error, string $login, int $estado): Response
     {
-        return $this->view('auth/login', ['titulo' => 'Iniciar sesión', 'aviso' => null, 'error' => $error, 'login' => $login], 'layouts/auth', $estado);
+        return $this->view('auth/login', ['titulo' => 'Iniciar sesión', 'aviso' => null, 'error' => $error, 'login' => $login, 'volver' => $this->volver], 'layouts/auth', $estado);
     }
 }

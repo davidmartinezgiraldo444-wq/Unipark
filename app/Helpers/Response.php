@@ -22,6 +22,49 @@ final class Response
         return new self('', 303, ['Location' => $destino]);
     }
 
+    /** Respuesta JSON para las pantallas del celular (escáner, cámara, Mi cuenta). */
+    public static function json(array $datos, int $status = 200): self
+    {
+        return new self(
+            json_encode($datos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+            $status,
+            ['Content-Type' => 'application/json; charset=utf-8']
+        );
+    }
+
+    /**
+     * Política de contenido para las pantallas de cámara: permite las bibliotecas de lectura de
+     * códigos (ZXing) y de IA (TensorFlow.js, Teachable Machine, COCO-SSD) desde jsDelivr, y la
+     * descarga de los pesos del modelo preentrenado desde storage.googleapis.com.
+     * Las imágenes de la cámara se procesan en el navegador y nunca se envían al servidor.
+     * $ia: TensorFlow.js evalúa código al iniciar ('unsafe-eval'); se permite SOLO en las dos
+     * pantallas de cámara con IA, nunca en el resto del sitio.
+     */
+    public function conBibliotecasDeCamara(bool $ia = false): self
+    {
+        $this->headers['Content-Security-Policy'] = "default-src 'self'; "
+            . "script-src 'self' https://cdn.jsdelivr.net" . ($ia ? " 'unsafe-eval'" : '') . "; "
+            . "connect-src 'self' https://cdn.jsdelivr.net https://storage.googleapis.com; "
+            . "style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
+            . "img-src 'self' data: blob:; media-src 'self' blob: mediastream:; worker-src 'self' blob:; "
+            . "form-action 'self'; frame-ancestors 'none'; base-uri 'self'";
+        return $this;
+    }
+
+    /**
+     * Permite que los formularios de ESTA página se envíen a un origen externo concreto (la página de pago
+     * de la pasarela). El resto del sitio conserva form-action 'self'.
+     */
+    public function conFormularioHacia(string $origen): self
+    {
+        $this->headers['Content-Security-Policy'] = str_replace("form-action 'self'", "form-action 'self' " . $origen, self::CSP);
+        return $this;
+    }
+
+    private const CSP = "default-src 'self'; script-src 'self'; "
+        . "style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
+        . "img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'self'";
+
     /** @param list<array<string,scalar|null>> $filas */
     public static function csv(string $nombre, array $encabezados, array $filas): self
     {
@@ -50,9 +93,7 @@ final class Response
             'X-Frame-Options'         => 'DENY',
             'Referrer-Policy'         => 'same-origin',
             'Cache-Control'           => 'no-store',
-            'Content-Security-Policy' => "default-src 'self'; script-src 'self'; "
-                . "style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
-                . "img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'self'",
+            'Content-Security-Policy' => self::CSP,
         ];
         foreach ($cabeceras as $nombre => $valor) {
             header($nombre . ': ' . $valor);

@@ -19,7 +19,9 @@ final class Session
 
         ini_set('session.use_strict_mode', '1');
         ini_set('session.use_only_cookies', '1');
-        session_name('UNIPARK_SESSION');
+        // Cada instancia (principal o demostración) tiene su propia cookie: nunca comparten sesión.
+        $nombre = (string) \App\Helpers\Env::get('SESSION_NAME', 'UNIPARK_SESSION');
+        session_name(preg_match('/^[A-Z_]{4,32}$/', $nombre) === 1 ? $nombre : 'UNIPARK_SESSION');
         session_set_cookie_params([
             'lifetime' => 0,
             'path'     => '/',

@@ -364,3 +364,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   html { scroll-behavior: auto; }
   * { transition: none !important; }
 }
+
+/* Rótulo de la copia de demostración (también en páginas sin layout, como /inicio). */
+.demo-banner { background: #fef0c7; color: #7a2e0e; border-bottom: 1px solid #fedf89; text-align: center; padding: 8px 16px; font-size: .9rem; font-weight: 600; }
+@media (max-width: 640px) { .demo-banner { padding: 6px 12px; font-size: .8rem; line-height: 1.35; } .demo-acelerado { display: block; font-weight: 500; } }

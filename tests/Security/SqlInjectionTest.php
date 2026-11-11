@@ -29,7 +29,7 @@ final class SqlInjectionTest extends TestCase
             $this->assertSame(null, $repo->findByDocumento($carga), "findByDocumento: {$carga}");
             $this->assertSame([], $repo->search($carga, 25, 0), "search: {$carga}");
         }
-        $this->assertSame(12, $repo->count(''), 'La tabla sigue intacta');
+        $this->assertSame(17, $repo->count(''), 'La tabla sigue intacta');
         $this->assertSame(7, (int) $this->valor('SELECT COUNT(*) FROM pagos'), 'La tabla pagos sigue existiendo');
     }
 

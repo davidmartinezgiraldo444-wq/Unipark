@@ -16,12 +16,12 @@
     <table class="table">
       <thead><tr><th>Usuario</th><th>Rol</th><th>Contraseña</th></tr></thead>
       <tbody>
-        <tr><td class="mono">admin</td><td>Administrador</td><td class="mono">Demo2026*</td></tr>
+        <tr><td class="mono">admin</td><td>Administrador</td><td class="mono">demo2026*</td></tr>
         <?php if ($demo): ?>
-          <tr><td class="mono">porteria</td><td>Portería</td><td class="mono">Demo2026*</td></tr>
-          <tr><td class="mono">caja</td><td>Caja</td><td class="mono">Demo2026*</td></tr>
-          <tr><td class="mono">caja2</td><td>Caja</td><td class="mono">Demo2026*</td></tr>
-          <tr><td class="mono">auditor</td><td>Auditor</td><td class="mono">Demo2026*</td></tr>
+          <tr><td class="mono">porteria</td><td>Portería</td><td class="mono">demo2026*</td></tr>
+          <tr><td class="mono">caja</td><td>Caja</td><td class="mono">demo2026*</td></tr>
+          <tr><td class="mono">caja2</td><td>Caja</td><td class="mono">demo2026*</td></tr>
+          <tr><td class="mono">auditor</td><td>Auditor</td><td class="mono">demo2026*</td></tr>
         <?php endif; ?>
       </tbody>
     </table>

@@ -27,8 +27,8 @@ final class ServicioTarifa
     public function cambiar(string $tipo, string $categoria, string $valor, int $usuario): int
     {
         $valor = str_replace(',', '.', trim($valor));
-        if (!ReglasVisita::tipoValido($tipo)) {
-            throw new ReglaNegocioException('TIPO_INVALIDO', 'Tipo de vehículo no válido.');
+        if (!ReglasVisita::tipoTarifable($tipo)) {
+            throw new ReglaNegocioException('TIPO_INVALIDO', 'Solo carro y moto tienen tarifa.');
         }
         if (!ReglasVisita::categoriaValida($categoria)) {
             throw new ReglaNegocioException('CATEGORIA_INVALIDA', 'Categoría no válida.');

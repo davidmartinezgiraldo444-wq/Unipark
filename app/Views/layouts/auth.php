@@ -8,6 +8,7 @@ $instalando = ($titulo ?? '') === 'Instalación';
 <?php require __DIR__ . '/head.php'; ?>
 </head>
 <body class="auth">
+<?php require __DIR__ . '/demo_banner.php'; ?>
 
   <aside class="auth-side">
     <a class="brand brand-sm" href="<?= e(url('inicio')) ?>" aria-label="UniPark, conocer el sistema">
@@ -23,22 +24,19 @@ $instalando = ($titulo ?? '') === 'Instalación';
         <ol class="auth-steps">
           <li><span class="mono">01</span>Datos de conexión a MySQL</li>
           <li><span class="mono">02</span>Creación de tablas y cuentas</li>
-          <li><span class="mono">03</span>Ingreso con <span class="mono">admin</span> / <span class="mono">Demo2026*</span></li>
+          <li><span class="mono">03</span>Ingreso con <span class="mono">admin</span> / <span class="mono">demo2026*</span></li>
         </ol>
       <?php else: ?>
-        <p class="eyebrow">Acceso restringido</p>
         <h2>Cada cuenta es individual.</h2>
         <p>Cada entrada, pago y salida queda registrada con el funcionario que la realizó. No compartas tu usuario ni tu contraseña.</p>
         <ul class="auth-roles">
           <li><span class="mono">Portería</span>Entradas y salidas</li>
           <li><span class="mono">Caja</span>Pagos y comprobantes</li>
-          <li><span class="mono">Administrador</span>Usuarios, tarifas y reportes</li>
-          <li><span class="mono">Auditor</span>Reportes y bitácora</li>
         </ul>
       <?php endif; ?>
     </div>
 
-    <p class="auth-side-foot">Corporación Universitaria Lasallista · Parqueadero</p>
+    <p class="auth-side-foot">UniPark · Gestión de parqueadero</p>
   </aside>
 
   <main class="auth-main">

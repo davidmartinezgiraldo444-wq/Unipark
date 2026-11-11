@@ -248,6 +248,20 @@ dialog.confirm p { margin-top: 10px; color: var(--ink-2); font-size: 15px; white
 .cambio strong { font-size: 18px; color: var(--ink); }
 .cambio[data-falta] strong { color: var(--err); }
 
+/* Carnets de prueba y carnet digital ------------------------------------ */
+.carnets { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.carnet { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; break-inside: avoid; }
+.carnet-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; }
+.carnet-codigo { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.cat-tag[data-cat="PROFESOR"] { background: #e3ecf8; color: #234a7a; }
+.cat-tag[data-cat="TRABAJADOR"] { background: #efe6f7; color: #5b2f7d; }
+.cat-tag[data-cat="VISITANTE"] { background: var(--warn-bg); color: var(--warn); }
+
+/* Avisos de la cuenta propia --------------------------------------------- */
+.avisos { display: grid; gap: 12px; }
+.avisos li { border-left: 3px solid var(--yellow); padding-left: 12px; font-size: 14px; }
+.avisos .sub { display: block; color: var(--muted); font-size: 12px; }
+
 @media (max-width: 1080px) {
   .grid-main { grid-template-columns: 1fr; }
 }
@@ -267,3 +281,132 @@ dialog.confirm p { margin-top: 10px; color: var(--ink-2); font-size: 15px; white
 @media print {
   .receipt { border: 0; padding: 0; max-width: none; }
 }
+
+/* Utilidades de espaciado (la política de contenido no permite estilos en línea) */
+.pad-head { padding: 20px 24px 0; }
+.pad-nota { padding: 6px 24px 12px; }
+.pt-14 { padding-top: 14px; }
+.sin-borde { border: 0; }
+.mt-8 { margin-top: 8px; } .mt-10 { margin-top: 10px; } .mt-12 { margin-top: 12px; }
+.mt-14 { margin-top: 14px; } .mt-24 { margin-top: 24px; }
+.mb-12 { margin-bottom: 12px; } .mb-16 { margin-bottom: 16px; }
+.panel-incidencia { border-left: 3px solid var(--err); }
+
+/* Panel de portería: avisos que requieren intervención ---------------------- */
+.avisos-panel { margin-bottom: 24px; }
+.avisos-contador { display: inline-flex; align-items: center; height: 30px; padding: 0 14px; border-radius: 15px; font: 600 13px/1 var(--sans); background: var(--paper-2); color: var(--muted); }
+.avisos-contador[data-estado="alerta"] { background: #fde7d9; color: #b4501a; }
+.avisos-lista { display: grid; gap: 16px; }
+.aviso-portero { border: 1px solid var(--line); border-left: 4px solid #e07a38; border-radius: 10px; padding: 18px 20px; background: var(--card); }
+.aviso-cab { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; }
+.aviso-cab h3 { font-size: 19px; }
+.aviso-icono svg { width: 26px; height: 26px; fill: none; stroke: #d0652a; stroke-width: 2; stroke-linecap: round; }
+.aviso-detalle { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
+.aviso-hora { color: var(--muted); font-size: 12px; }
+.aviso-datos { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 14px 0 0; font-size: 14px; }
+.aviso-datos dt { color: var(--muted); }
+.aviso-datos dd { margin: 0; }
+.aviso-captura { display: block; max-width: 100%; max-height: 220px; border-radius: 8px; margin-top: 12px; }
+.aviso-pregunta { font-weight: 600; margin: 16px 0 10px; font-size: 16px; }
+.aviso-tipos { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.aviso-tipo { display: grid; justify-items: center; gap: 6px; padding: 14px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); font: 600 16px/1.1 var(--sans); color: var(--ink); cursor: pointer; }
+.aviso-tipo:hover:not(:disabled) { border-color: var(--ink); }
+.aviso-tipo:disabled { opacity: .5; cursor: default; }
+.aviso-tipo svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.aviso-resultado { margin-top: 10px; font-size: 14px; font-weight: 500; }
+.aviso-resultado[data-tono="ok"] { color: var(--ok); }
+.aviso-resultado[data-tono="err"] { color: var(--err); }
+.kpi-texto { font-size: 18px; }
+
+.lista-reglas { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+a.kpi { color: inherit; text-decoration: none; display: block; }
+a.kpi:hover { border-color: var(--ink, currentColor); }
+.kpis.mt-12 { margin-top: 12px; }
+
+/* Mi saldo · valores sugeridos de recarga */
+.montos { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.monto { position: relative; display: block; cursor: pointer; }
+.monto input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.monto span { display: block; padding: 14px 10px; text-align: center; font-weight: 600; border: 1px solid var(--line, #d0d5dd); border-radius: 10px; background: #fff; }
+.monto input:checked + span { border-color: var(--ink, #111); box-shadow: 0 0 0 2px var(--ink, #111) inset; }
+.monto input:focus-visible + span { outline: 2px solid var(--yellow, #f5c518); outline-offset: 2px; }
+
+/* Simulador de pasarela (solo copia de demostración) */
+.sim-pasarela { background: #eef1f6; min-height: 100vh; margin: 0; }
+.sim-franja { background: #b42318; color: #fff; text-align: center; font-weight: 600; padding: 10px 16px; letter-spacing: .02em; }
+.sim-main { display: flex; justify-content: center; padding: 32px 16px; }
+.sim-card { background: #fff; border-radius: 16px; box-shadow: 0 8px 30px rgba(16, 24, 40, .12); padding: 28px; width: 100%; max-width: 440px; }
+.sim-card.sim-ancho { max-width: 960px; }
+.sim-marca { font-weight: 700; color: #1d2939; margin: 0 0 14px; }
+.sim-marca span { color: #b42318; font-weight: 600; }
+.sim-concepto { margin: 0; color: #475467; }
+.sim-monto { font-size: 2.2rem; font-weight: 700; margin: 4px 0; }
+.sim-monto small { font-size: 1rem; color: #667085; }
+.sim-ref { color: #667085; margin: 0 0 18px; }
+.sim-opciones { display: grid; gap: 10px; margin-bottom: 14px; }
+.sim-acciones { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Rótulo visible de la copia de demostración */
+.demo-banner { background: #fef0c7; color: #7a2e0e; border-bottom: 1px solid #fedf89; text-align: center; padding: 8px 16px; font-size: .9rem; font-weight: 600; }
+/* En las pantallas con cuadrícula (menú + contenido) el rótulo ocupa todo el ancho. */
+.app > .demo-banner, .auth > .demo-banner { grid-column: 1 / -1; }
+.demo-acelerado { display: block; margin-top: 2px; color: #b42318; }
+
+/* Aviso de simulación académica (checkout y panel de la demo) */
+.aviso-simulacion { border-left: 4px solid #b42318; background: #fff4f2; color: #7a1d14; padding: 10px 14px; margin: 0 0 18px; }
+
+/* Panel de portería: actividad en tiempo real (solo lectura) */
+.avisos-subtitulo { font-size: .95rem; margin: 18px 0 4px; text-transform: uppercase; letter-spacing: .04em; }
+.actividad { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1px solid #8a8578; }
+.actividad-fila { display: grid; grid-template-columns: 70px 170px 1fr; gap: 2px 12px; padding: 8px 0; border-bottom: 1px solid #d6d2c8; align-items: baseline; }
+.actividad-fila .actividad-detalle { grid-column: 3; color: #5b5f66; font-size: .875rem; }
+.actividad-hora { color: #5b5f66; font-size: .85rem; }
+.actividad-estado { font-weight: 600; }
+.actividad-fila[data-tono="ok"] .actividad-estado::before { content: "✓ "; color: #1e6b3a; }
+.actividad-fila[data-tono="err"] .actividad-estado::before { content: "✕ "; color: #b4234a; }
+.actividad-fila[data-tono="proceso"] .actividad-estado::before { content: "● "; color: #a65300; }
+@media (max-width: 640px) { .actividad-fila { grid-template-columns: 60px 1fr; } .actividad-fila .actividad-persona, .actividad-fila .actividad-detalle { grid-column: 2; } }
+
+/* Carnés ficticios de demostración */
+.carnet-sello { font-size: .8rem; color: #7a1d14; margin: 2px 0 8px; text-transform: uppercase; letter-spacing: .03em; }
+.carnet-codigos { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+.carnet-codigos figure { margin: 0; text-align: center; }
+.carnet-codigos figcaption { font-size: .75rem; color: #5b5f66; }
+.carnet-codigos .carnet-ancho { grid-column: 1 / -1; }
+.carnet-qr { width: 96px; height: auto; }
+.carnet-pdf417 { max-width: 100%; height: auto; }
+
+/* ============================================================================
+   Consolidación visual (auditoría 09/11/2026, hallazgos C):
+   contraste de bordes y foco, menos tarjetas/sombras/redondeos, menú del celular sin recorte.
+   ========================================================================== */
+:root { --line-strong: #8a8578; --muted: #5b5f66; --warn: #a65300; --err: #b4234a; --radius: 2px; }
+.field input, .field select, .field textarea, .tarifa-card form input, details.anular textarea { border-color: var(--line-strong); }
+.field input:focus, .field select:focus, .field textarea:focus,
+.tarifa-card form input:focus, details.anular textarea:focus { outline: 3px solid var(--yellow); outline-offset: 1px; border-color: var(--ink); box-shadow: none; }
+a:focus-visible, button:focus-visible, .btn:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+.panel, .kpi, .auth-card, .table-wrap, .receipt, .carnet, .aviso-portero, .aviso-tipo, .monto span,
+.checklist, .block-msg, dialog.confirm, .tipo-choice label { border-radius: 2px; box-shadow: none; }
+.panel, .kpi, .table-wrap, .receipt { border-color: #cfcabe; }
+.btn { border-radius: 2px; }
+.avisos-contador { border-radius: 2px; }
+.porteria-buscar { margin-bottom: 24px; }
+@media (max-width: 960px) {
+  /* El menú baja de línea en vez de desplazarse de lado (antes quedaba recortado). */
+  .side-nav { flex-wrap: wrap; overflow-x: visible; margin: 0; padding: 0; }
+  .side-nav a { flex-shrink: 1; }
+  .solo-escritorio { display: none; }
+}
+@media (max-width: 640px) {
+  .demo-banner { padding: 6px 12px; font-size: .8rem; line-height: 1.35; }
+  .demo-acelerado { display: block; font-weight: 500; }
+}
+
+/* Mi cuenta: aviso del cobro del día (distinto del veredicto de salida del escáner) */
+.estado-hoy { display: grid; gap: 4px; }
+.estado-hoy-titulo { font-size: 1.05rem; text-transform: uppercase; letter-spacing: .03em; }
+
+/* Panel del portero: confirmar la detección de la IA (o cambiarla con los botones de abajo) */
+.aviso-portero.aviso-confirmar { border-left-color: var(--ok); }
+.aviso-confirmar-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; margin-top: 14px; font-size: 17px; }
+.aviso-confirmar-btn svg { width: 28px; height: 28px; }

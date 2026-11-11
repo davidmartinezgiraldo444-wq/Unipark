@@ -1,0 +1,148 @@
+/* UniPark · Pantallas de cámara para el celular (escáner de portería y cámara de vehículos). */
+
+body.movil { background: var(--ink); color: var(--ink); min-height: 100vh; min-height: 100dvh; }
+
+.movil-head {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 16px; background: var(--ink); color: #fff;
+}
+.movil-head .brand { color: #fff; text-decoration: none; }
+.movil-user { font-size: 12px; color: #c9cbd0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; }
+
+.movil-main { max-width: 560px; margin: 0 auto; padding: 0 0 32px; }
+
+/* Barra de modo */
+.modo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 16px 12px; background: var(--ink); color: #e8e9ec; font-size: 13px; }
+.modo select, .modo .chip { font: 500 13px/1 var(--sans); }
+.modo select { height: 34px; border-radius: 17px; border: 1px solid #4a4e57; background: #22252c; color: #fff; padding: 0 12px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #4a4e57; background: #22252c; color: #fff; cursor: pointer; }
+.chip input { accent-color: var(--yellow); margin: 0; }
+
+/* Visor de cámara */
+.visor { position: relative; background: #000; aspect-ratio: 3 / 4; max-height: 62vh; width: 100%; overflow: hidden; }
+.visor video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.visor-marco {
+  position: absolute; inset: 22% 10%; border: 3px solid rgba(255, 255, 255, .85); border-radius: 12px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .35); pointer-events: none; transition: inset .2s ease, border-color .2s ease;
+}
+.visor[data-fase="vehiculo"] .visor-marco { inset: 8% 6%; border-color: var(--yellow); }
+.visor-texto {
+  position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; color: #fff;
+  font: 600 15px/1.3 var(--sans); text-shadow: 0 1px 3px rgba(0, 0, 0, .7); padding: 0 16px;
+}
+.visor-estado {
+  position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 12px;
+  background: rgba(0, 0, 0, .6); color: #fff; font: 500 12px/1.4 var(--mono);
+}
+.visor-apagado { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: #fff; padding: 24px; gap: 12px; align-content: center; }
+.visor-apagado p { color: #c9cbd0; font-size: 14px; }
+
+/* Tarjetas bajo el visor */
+.tarjetas { display: grid; gap: 12px; padding: 12px; }
+.tarjeta { background: var(--card); border-radius: 12px; padding: 18px; }
+.tarjeta h2 { font-size: 20px; }
+.tarjeta .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.fila-entre { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+.manual { display: flex; gap: 8px; }
+.manual input { flex: 1; min-width: 0; height: 48px; border: 1px solid var(--line); border-radius: var(--radius); padding: 0 14px; font: 500 17px/1 var(--mono); }
+.manual .btn { height: 48px; }
+
+/* Resultado de la IA */
+.ia { display: grid; gap: 10px; margin-top: 14px; }
+.ia-clase { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
+.ia-barra { height: 8px; border-radius: 4px; background: var(--paper-2); overflow: hidden; }
+.ia-barra span { display: block; height: 100%; width: 0; background: var(--ink-2); transition: width .2s ease; }
+.ia[data-estado="estable"] .ia-barra span { background: var(--ok); }
+.ia[data-estado="baja"] .ia-barra span { background: var(--yellow); }
+.ia-nota { font-size: 13px; color: var(--muted); }
+.ia-fuente { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+
+.tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.tipos button {
+  height: 56px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper);
+  font: 600 15px/1.1 var(--sans); color: var(--ink); cursor: pointer; display: grid; place-items: center; gap: 2px;
+}
+.tipos button small { font: 500 11px/1 var(--mono); color: var(--muted); }
+.tipos button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
+.tipos button[aria-pressed="true"] small { color: #c9cbd0; }
+
+/* Veredicto de salida: pantalla completa, legible a distancia */
+.veredicto {
+  position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; text-align: center;
+  padding: 32px; color: #fff; gap: 16px; align-content: center;
+}
+.veredicto[data-tono="ok"] { background: var(--ok); }
+.veredicto[data-tono="err"] { background: var(--err); }
+.veredicto[data-tono="info"] { background: var(--ink); }
+.veredicto strong { display: block; font-size: 44px; line-height: 1.05; letter-spacing: -0.02em; }
+.veredicto p { font-size: 18px; max-width: 26ch; margin: 0 auto; }
+.veredicto .btn { background: rgba(255, 255, 255, .15); color: #fff; border: 1px solid rgba(255, 255, 255, .5); }
+
+.cuenta-regresiva { font: 600 32px/1 var(--mono); letter-spacing: -0.02em; }
+
+.visitas-abiertas { display: grid; gap: 8px; margin-top: 12px; }
+.visita-abierta { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+
+.aviso { padding: 12px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; }
+.aviso[data-tono="ok"] { background: var(--ok-bg); color: var(--ok); }
+.aviso[data-tono="err"] { background: var(--err-bg); color: var(--err); }
+.aviso[data-tono="warn"] { background: var(--warn-bg); color: var(--warn); }
+
+/* Cámara de vehículos (segundo celular) */
+.puesto-grande { padding: 22px 18px; text-align: center; }
+.puesto-grande .ia-clase { font-size: 40px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .visor-marco, .ia-barra span { transition: none; }
+}
+.bloque { display: block; }
+
+/* Espejo para la cámara frontal o la webcam (solo la vista; la lectura usa la imagen original) */
+.visor video.espejo { transform: scaleX(-1); }
+/* Línea de escaneo: indica que el lector está trabajando */
+.visor-linea { position: absolute; left: 6%; right: 6%; top: 50%; height: 2px; background: var(--err); box-shadow: 0 0 8px var(--err); opacity: .85; }
+.visor[data-fase="carnet"] .visor-linea { animation: barrido 1.8s ease-in-out infinite alternate; }
+.visor[data-fase="vehiculo"] .visor-linea { display: none; }
+@keyframes barrido { from { top: 18%; } to { top: 82%; } }
+.modo select[data-camara] { max-width: 100%; }
+@media (prefers-reduced-motion: reduce) { .visor-linea { animation: none !important; } }
+
+/* Punto de acceso: estado del evento */
+.estado-chip { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 14px; background: var(--ok-bg); color: var(--ok); font: 600 12px/1 var(--sans); white-space: nowrap; }
+.veredicto[data-tono="info"] .cuenta-regresiva { font-size: 16px; font-family: var(--sans); opacity: .85; }
+
+/* Detalle del resultado (entrada o salida), calculado por el servidor */
+.v-detalle { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; text-align: left; margin: 14px auto 0; max-width: 34ch; font-size: 15px; }
+.v-detalle[hidden] { display: none; }
+.v-detalle dt { opacity: .8; }
+.v-detalle dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.v-resolver { font-size: 15px !important; max-width: 34ch !important; margin-top: 12px !important; border-top: 1px solid rgba(255, 255, 255, .4); padding-top: 10px; }
+
+/* Estado de la lectura del documento */
+.lectura { margin: 10px 0 0; padding: 8px 12px; border-left: 4px solid currentColor; font-size: 15px; }
+.lectura[hidden] { display: none; }
+.lectura[data-tono="ok"] { color: var(--ok); background: var(--ok-bg); }
+.lectura[data-tono="err"] { color: var(--err); background: var(--err-bg); }
+.lectura[data-tono="info"] { color: var(--ink); background: #eef0f2; }
+
+/* Rótulo de la copia de demostración */
+.demo-banner { background: #fef0c7; color: #7a2e0e; border-bottom: 1px solid #fedf89; text-align: center; padding: 6px 12px; font-size: .8rem; font-weight: 600; line-height: 1.35; }
+.demo-acelerado { display: block; font-weight: 500; }
+
+/* Modo diagnóstico (solo demo) */
+.diagnostico { margin: 16px; padding: 10px 12px; border: 1px solid #8a8578; background: #fff; font-size: .85rem; }
+.diagnostico summary { cursor: pointer; font-weight: 600; }
+.diagnostico dl { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: 4px 10px; margin: 10px 0 6px; }
+.diagnostico dt { color: #5b5f66; }
+.diagnostico dd { margin: 0; word-break: break-word; }
+.diagnostico dd[data-tono="ok"] { color: #1e6b3a; font-weight: 600; }
+.diagnostico dd[data-tono="err"] { color: #b4234a; font-weight: 600; }
+
+/* «Espera un momento» (verificación de Portería): fondo blanco, texto en tinta y borde de aviso. */
+.veredicto[data-tono="info"] { background: #fff; color: var(--ink); border-top: 8px solid var(--yellow); }
+.veredicto[data-tono="info"] .btn { background: var(--ink); color: #fff; border: 1px solid var(--ink); }
+.veredicto[data-tono="info"] .cuenta-regresiva { color: var(--ink-2, #3a3d44); opacity: 1; font-weight: 600; }
+.veredicto[data-tono="info"] .v-detalle dt { color: #5b5f66; }

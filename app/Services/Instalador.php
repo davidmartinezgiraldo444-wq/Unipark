@@ -94,7 +94,7 @@ final class Instalador
             $this->paso('Roles, permisos, tarifas y cuenta del administrador');
             if ($d['demo']) {
                 SqlFile::run($pdo, BASE_PATH . '/database/seed.sql');
-                $this->paso('Datos de demostración: usuarios por rol, estudiantes, profesores, visitas y pagos');
+                $this->paso('Datos de demostración: usuarios de prueba por rol (contraseña demo2026*), personas, saldos, visitas y pagos');
             }
         } catch (PDOException $e) {
             throw new ReglaNegocioException('ESQUEMA', 'No se pudo crear la estructura de la base de datos. El usuario necesita permisos CREATE, ALTER, DROP, INDEX, REFERENCES y TRIGGER. (' . self::mensajeMysql($e) . ')');
@@ -157,8 +157,8 @@ final class Instalador
             $tablas = $pdo->query('SELECT table_name FROM information_schema.tables WHERE table_schema = ' . $pdo->quote($base))
                 ->fetchAll(PDO::FETCH_COLUMN);
             foreach ($tablas as $tabla) {
-                // Mínimo privilegio (sección 9.2): sin DELETE, y la auditoría solo admite INSERT.
-                $privilegios = $tabla === 'auditoria' ? 'SELECT, INSERT' : 'SELECT, INSERT, UPDATE';
+                // Mínimo privilegio (sección 9.2): sin DELETE; la auditoría y el libro de saldos solo admiten INSERT.
+                $privilegios = in_array($tabla, ['auditoria', 'movimientos_saldo', 'migraciones', 'importaciones', 'notificaciones_pasarela'], true) ? 'SELECT, INSERT' : 'SELECT, INSERT, UPDATE';
                 $pdo->exec("GRANT {$privilegios} ON `{$base}`.`{$tabla}` TO {$cuenta}");
             }
             $pdo->exec('FLUSH PRIVILEGES');

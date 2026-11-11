@@ -1,15 +1,21 @@
-// Simulador del flujo entrada → pago → salida (solo demostrativo, sin servidor).
+// Simulador del cobro diario (solo demostrativo, sin servidor): identidad → vehículo → tolerancia de
+// 15 minutos → cobro del día con el saldo → salida que solo verifica. Tarifas de ejemplo de estudiante.
 (function () {
   const sim = document.querySelector('.sim');
   if (!sim) return;
 
   const field = (name) => sim.querySelector('[data-field="' + name + '"]');
   const tipoButtons = sim.querySelectorAll('[data-tipo]');
+  const TARIFA = { CARRO: 2000, MOTO: 1000, BICICLETA: 0 };
+  const NOMBRE = { CARRO: 'automóvil', MOTO: 'motocicleta', BICICLETA: 'bicicleta' };
+  const SALDO_INICIAL = 1500;
 
   let visita = null;
   let tipo = 'CARRO';
-  let recibo = 1040;
+  let saldo = SALDO_INICIAL;
+  let cobradoHoy = 0; // el día vale la tarifa más alta usada
 
+  const pesos = (n) => '$ ' + n.toLocaleString('es-CO');
   const hora = () =>
     new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 
@@ -23,8 +29,9 @@
   function render() {
     const estado = field('estado');
     field('entrada').textContent = visita ? visita.entrada : '—';
-    field('pago').textContent = visita && visita.pago ? visita.pago : '—';
+    field('pago').textContent = visita && visita.cobro ? visita.cobro : '—';
     field('salida').textContent = visita && visita.salida ? visita.salida : '—';
+    field('saldo').textContent = pesos(saldo);
 
     if (!visita) {
       estado.textContent = 'SIN VISITA';
@@ -32,11 +39,14 @@
     } else if (visita.salida) {
       estado.textContent = 'CERRADA';
       estado.dataset.state = 'cerrada';
-    } else if (visita.pago) {
-      estado.textContent = 'EN_CURSO · PAGADO';
+    } else if (visita.pendiente) {
+      estado.textContent = 'EN_CURSO · PENDIENTE';
+      estado.dataset.state = 'abierta';
+    } else if (visita.cobro) {
+      estado.textContent = 'EN_CURSO · AL DÍA';
       estado.dataset.state = 'pagada';
     } else {
-      estado.textContent = 'EN_CURSO';
+      estado.textContent = 'EN_CURSO · TOLERANCIA';
       estado.dataset.state = 'abierta';
     }
 
@@ -50,40 +60,56 @@
   const acciones = {
     entrada() {
       if (visita && !visita.salida) {
-        mensaje('Rechazado: el estudiante ya tiene una visita abierta.', 'err');
+        mensaje('Rechazado: la persona ya tiene una visita abierta.', 'err');
         return;
       }
-      visita = { tipo: tipo, entrada: hora(), pago: null, salida: null };
-      mensaje('Entrada registrada como ' + tipo + ' con la tarifa vigente.', 'ok');
+      visita = { tipo: tipo, entrada: hora(), cobro: null, pendiente: false, salida: null };
+      mensaje('Carné validado; la cámara detectó ' + NOMBRE[tipo] + '. Empiezan 15 minutos de tolerancia.', 'ok');
     },
     pago() {
       if (!visita || visita.salida) {
-        mensaje('No hay una visita abierta pendiente de pago.', 'err');
+        mensaje('No hay una visita abierta.', 'err');
         return;
       }
-      if (visita.pago) {
-        mensaje('Rechazado: esta visita ya tiene un pago válido.', 'err');
+      if (visita.cobro) {
+        mensaje('El cobro de esta visita ya se procesó: no se cobra dos veces.', 'err');
         return;
       }
-      recibo += 1;
-      visita.pago = 'Recibo ' + String(recibo).padStart(6, '0');
-      mensaje('Pago confirmado por Caja. Comprobante emitido.', 'ok');
+      const diferencia = Math.max(0, TARIFA[visita.tipo] - cobradoHoy);
+      if (TARIFA[visita.tipo] === 0) {
+        visita.cobro = 'Sin tarifa';
+        mensaje('Bicicleta: se registra, sin cobro.', 'ok');
+      } else if (diferencia === 0) {
+        visita.cobro = 'Ya pagó hoy';
+        mensaje('Hoy ya se cobró una tarifa igual o mayor: no se cobra de nuevo.', 'ok');
+      } else if (saldo >= diferencia) {
+        saldo -= diferencia;
+        cobradoHoy += diferencia;
+        visita.cobro = 'Débito ' + pesos(diferencia);
+        mensaje('Pasaron 15 minutos: se descontó ' + pesos(diferencia) + ' del saldo.', 'ok');
+      } else {
+        visita.cobro = 'Pendiente ' + pesos(diferencia);
+        visita.pendiente = true;
+        mensaje('Saldo insuficiente: el cobro queda pendiente y se avisa al celular. Debe pagar en Caja.', 'err');
+      }
     },
     salida() {
       if (!visita || visita.salida) {
-        mensaje('No hay una visita abierta para este estudiante.', 'err');
+        mensaje('No hay una visita abierta para esta persona.', 'err');
         return;
       }
-      if (!visita.pago) {
+      if (visita.pendiente) {
         mensaje('Pago pendiente. Diríjase a Caja.', 'err');
         return;
       }
       visita.salida = hora();
-      mensaje('Salida autorizada. La visita queda cerrada.', 'ok');
+      mensaje(visita.cobro ? 'Salida autorizada: el día está pagado.' : 'Salió antes de 15 minutos: no se cobra.', 'ok');
     },
     reiniciar() {
       visita = null;
-      mensaje('Intenta autorizar la salida antes de pagar.');
+      saldo = SALDO_INICIAL;
+      cobradoHoy = 0;
+      mensaje('Prueba carro (no alcanza el saldo) y moto (sí alcanza).');
     }
   };
 
