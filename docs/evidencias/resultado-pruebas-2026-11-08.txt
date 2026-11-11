@@ -1,0 +1,188 @@
+UniPark · pruebas sobre la base 'unipark_db_test'
+
+Unit/ReglasCobroTest
+  ✓ testLaToleranciaVenceALos15MinutosExactos 1 ms
+  ✓ testSoloSeCobraACategoriasYVehiculosConTarifa 0 ms
+  ✓ testUnSoloCobroPorDia 0 ms
+  ✓ testLaSalidaSoloConsultaElEstado 0 ms
+  ✓ testSaldoSuficienteEnCentavos 0 ms
+  ✓ testLecturaDeCarnetYCedula 1 ms
+
+Unit/RequestTest
+  ✓ testDetrasDeUnTunelSeUsaLaIpDelVisitante 0 ms
+  ✓ testUnVisitanteDirectoNoPuedeFalsificarSuIp 0 ms
+  ✓ testHttpsTerminadoPorElTunel 0 ms
+
+Unit/TarifaTest
+  ✓ testAceptaValoresPositivosConHastaDosDecimales 0 ms
+  ✓ testRechazaNegativosTextoYMasDeDosDecimales 0 ms
+  ✓ testTarifaCeroDependeDeLaPoliticaInstitucional 0 ms
+  ✓ testComparaMontosEnCentavosSinErroresDeComaFlotante 0 ms
+  ✓ testSoloExistenLasCategoriasEstudianteYProfesor 0 ms
+  ✓ testSeRegistranCuatroTiposYSoloCarroYMotoTienenTarifa 0 ms
+
+Unit/ValidacionVisitaTest
+  ✓ testSalidaPermitidaConVisitaAbiertaYPagoDeEsaVisita 0 ms
+  ✓ testSalidaSinPagoSeDeniegaConElMensajeDelDocumento 0 ms
+  ✓ testSalidaConPagoAnuladoSeDeniega 0 ms
+  ✓ testSalidaConPagoDeOtraVisitaSeDeniega 0 ms
+  ✓ testSalidaDeVisitaCerradaOInexistenteSeDeniega 0 ms
+  ✓ testPagoUnicoPorElMontoExacto 0 ms
+  ✓ testPagoAnuladoPermiteUnNuevoCobro 0 ms
+  ✓ testDocumentoDelEstudiante 0 ms
+  ✓ testPoliticaDeContrasenas 0 ms
+
+Unit/WebPushTest
+  ✓ testElMensajeCifradoSoloLoDescifraElNavegadorSuscrito 15 ms
+  ✓ testLaFirmaVapidEsUnJwtEs256Valido 2 ms
+
+Integration/AccesoTest
+  ✓ testIdentificacionConCarneYConCedula 1264 ms
+  ✓ testPersonaNoRegistradaQuedaParaElPorteroSinDuplicarAvisos 1206 ms
+  ✓ testPersonaDesautorizadaSeRechazaConMotivo 1370 ms
+  ✓ testClasificacionConfiableRegistraLaEntradaConTarifaDelServidor 1209 ms
+  ✓ testClasificacionDeMotoYBicicleta 1146 ms
+  ✓ testBajaConfianzaMargenCortoOTipoDeshabilitadoPasanAlPortero 1228 ms
+  ✓ testElPorteroResuelveYQuedaAuditado 1203 ms
+  ✓ testLosReintentosNoDuplicanEntradas 1236 ms
+  ✓ testSalidaConElMismoVehiculoAntesDe15MinutosSinCobro 1254 ms
+  ✓ testPermanenciaMayorA15MinutosCobraYLaSalidaSoloVerifica 1326 ms
+  ✓ testSaldoInsuficienteDejaPendienteYLaSalidaSeDeniega 1132 ms
+  ✓ testSalidaConVehiculoDiferenteNoCierraElEstacionamiento 1225 ms
+  ✓ testSalidaSinDeteccionQuedaParaElPortero 1190 ms
+  ✓ testDosPersonasEnElMismoPuntoNoComparteVehiculo 1240 ms
+  ✓ testDosPuntosDeAccesoSimultaneos 1202 ms
+  ✓ testCamaraDelPuestoSoloSirveSiEsPosteriorAlEscaneo 1229 ms
+  ✓ testEventosSinAtenderExpiranSinRegistrarNada 1159 ms
+
+Integration/AdministracionTest
+  ✓ testReversarUnaRecargaMalDigitadaCreaUnMovimientoYNoBorraNada 1141 ms
+  ✓ testNoSeReversaUnaRecargaQueYaPagoCobros 1184 ms
+  ✓ testSoloElAdministradorReversaRecargasPorLaWeb 1148 ms
+  ✓ testElAdministradorAnulaUnCobroPendienteDesdeElHistorial 1144 ms
+  ✓ testElSaldoPagaLosPendientesQueAlcanzaAunqueUnoAnteriorNoAlcance 1324 ms
+  ✓ testLosReportesNuevosRespetanElRol 1285 ms
+  ✓ testValidarNoGuardaPersonasYAplicarCreaYActualiza 1184 ms
+  ✓ testLaImportacionExigeLasColumnasObligatoriasYRespetaCarnetsAjenos 1175 ms
+  ✓ testLaImportacionEsSoloDelAdministrador 1118 ms
+
+Integration/AuditoriaTest
+  ✓ testCP13CambioDeTarifaRegistraUsuarioHoraAccionYValores 1084 ms
+  ✓ testCP13AnulacionRegistraElMotivo 1189 ms
+  ✓ testTarifaIgualOValorInvalidoSeRechaza 1228 ms
+  ✓ testLaBitacoraNoSePuedeModificarNiBorrar 1131 ms
+  ✓ testLaCuentaDeLaAplicacionNoTienePermisoDeBorrar 1166 ms
+
+Integration/BackupRestoreTest
+  ✓ testCP14RespaldoYRestauracionRecuperanElEstado 3254 ms
+  ✓ testRestaurarSinConfirmacionNoModificaNada 1719 ms
+
+Integration/CobroDiarioTest
+  ✓ testLaEntradaArrancaLaToleranciaDe15Minutos 1228 ms
+  ✓ testSiSaleAntesDe15MinutosNoSeCobra 1229 ms
+  ✓ testAlVencerLaToleranciaSeDebitaElSaldoAntesDeLaSalida 1102 ms
+  ✓ testSinSaldoQuedaPendienteSeAvisaYLaSalidaSeDeniegaHastaPagarEnCaja 1199 ms
+  ✓ testUnaPersonaPagaUnaSolaVezPorDiaAunqueEntreYSalgaVariasVeces 1152 ms
+  ✓ testMotoYLuegoAutomovilCobraSoloLaDiferencia 1143 ms
+  ✓ testAutomovilYLuegoMotoNoCobraNadaMas 1113 ms
+  ✓ testDiferenciaSinSaldoQuedaPendienteYLaSalidaSeDeniega 1339 ms
+  ✓ testElDiaSiguienteSeCobraDeNuevo 1125 ms
+  ✓ testLaBaseImpideDosCobrosVigentesDeLaMismaPersonaElMismoDia 1157 ms
+  ✓ testVisitantesNoPaganYPuedenTenerVariasVisitasAbiertas 1167 ms
+  ✓ testBicicletaSinTarifaYPatinetaDeshabilitada 1146 ms
+  ✓ testLaSalidaNuncaCobraSiElProcesoNoCorrioRegistraUnaIncidencia 1101 ms
+  ✓ testElCronEjecutadoVariasVecesALaVezNoDuplicaCobrosNiDebitos 1229 ms
+  ✓ testElCobroUsaLaHoraYFechaDeColombia 1069 ms
+  ✓ testLaRecargaPagaLosCobrosPendientes 1153 ms
+  ✓ testAnularUnDebitoReintegraElSaldoYDejaElCobroPendiente 1160 ms
+  ✓ testElLibroDeSaldosNoSeModificaNiSeBorra 1178 ms
+
+Integration/EntradaTest
+  ✓ testCP01EntradaValidaCreaVisitaEnCurso 1337 ms
+  ✓ testCP02EntradaDuplicadaSeRechazaYMuestraLaVisitaActual 1165 ms
+  ✓ testCP03DosEntradasSimultaneasSoloConfirmanUna 2810 ms
+  ✓ testCP03LaBaseRechazaUnaSegundaVisitaAbiertaAunqueSeOmitaLaAplicacion 1181 ms
+  ✓ testCP10CambioDeTarifaNoAlteraVisitasExistentes 1185 ms
+  ✓ testCP10LaBaseImpideEditarLaTarifaAplicada 1147 ms
+  ✓ testProfesorPagaLaTarifaDeProfesor 1117 ms
+  ✓ testLaBaseImpideUsarLaTarifaDeOtraCategoria 1125 ms
+  ✓ testEstudianteInactivoOInexistenteNoIngresa 1148 ms
+  ✓ testDespuesDeSalirElEstudiantePuedeVolverAIngresar 1172 ms
+  ✓ testAnularVisitaExigeMotivoYConservaLaFila 1304 ms
+
+Integration/PagoTest
+  ✓ testCP04PagoValidoPorElMontoExactoConConsecutivoUnico 1144 ms
+  ✓ testCP05UnaVisitaNoSePuedePagarDosVeces 1162 ms
+  ✓ testCP05LaBaseRechazaUnSegundoPagoValidoDirecto 1152 ms
+  ✓ testCP05PagosSimultaneosDeLaMismaVisitaSoloConfirmanUno 2898 ms
+  ✓ testNoSeCobraUnaVisitaCerradaOAnulada 1182 ms
+  ✓ testAnularPagoExigeMotivoConservaLaFilaYPermiteNuevoCobro 1265 ms
+  ✓ testLaBaseImpideModificarOBorrarPagosConfirmados 1330 ms
+
+Integration/SalidaTest
+  ✓ testCP06SalidaSinPagoSeDeniegaYNoSeRegistra 1322 ms
+  ✓ testCP07SalidaConPagoCierraLaVisita 1248 ms
+  ✓ testFlujoCompletoEntradaPagoSalida 1170 ms
+  ✓ testUnaVisitaCerradaNoSaleDosVecesNiSeModifica 1195 ms
+  ✓ testPagoAnuladoVuelveABloquearLaSalida 1201 ms
+  ✓ testLaBaseExigeEstadosConsistentes 1188 ms
+
+Integration/VistasTest
+  ✓ testEditarPersonaMuestraSusDatosYCategoria 1317 ms
+  ✓ testEditarUsuarioMuestraSusDatos 1194 ms
+  ✓ testPorteriaMuestraLaTarifaDeLaCategoria 1372 ms
+  ✓ testLaRaizAbreElAccesoOElPanel 1188 ms
+  ✓ testLaPresentacionPublicaQuedaEnInicio 1236 ms
+  ✓ testLosRecursosLlevanVersionParaEvitarCacheVieja 1370 ms
+  ✓ testUnaVistaPuedeRecibirUnaVariableLlamadaDatos 1226 ms
+
+Security/AccesoSeguridadTest
+  ✓ testUnEstudianteNoPuedeClasificarNiResolverNiRegistrarEntradas 1255 ms
+  ✓ testElPuntoDeAccesoNoPuedeElegirElTipoNiResolver 1257 ms
+  ✓ testUnPorteroAutorizadoResuelveYUnoSinRolNo 1155 ms
+  ✓ testElNavegadorNoFijaTarifaTiempoNiSaldo 1319 ms
+  ✓ testApiSinSesionResponde401JsonSinRegistrarCsrf 1196 ms
+  ✓ testSesionDelDispositivoDuraElTurnoYLaDelEstudianteNo 1193 ms
+  ✓ testSuscripcionPushSoloAServiciosConocidos 1135 ms
+  ✓ testCronPorUrlDeshabilitadoSinFichaLarga 1164 ms
+  ✓ testRolesYPermisosNuevos 1193 ms
+
+Security/CsrfTest
+  ✓ testCP12PagoSinTokenSeRechaza 1176 ms
+  ✓ testCP12TokenIncorrectoSeRechazaEnTodasLasOperacionesSensibles 1033 ms
+  ✓ testCP12LoginTambienExigeToken 1126 ms
+  ✓ testConTokenValidoLaOperacionProcede 1255 ms
+  ✓ testLosFormulariosIncluyenElToken 1182 ms
+
+Security/PermisosTest
+  ✓ testCP08CajaNoPuedeRegistrarSalidaNiLlamandoLaUrlDirectamente 1132 ms
+  ✓ testCP08PorteriaNoPuedeRegistrarPagoNiLlamandoLaUrlDirectamente 1209 ms
+  ✓ testCP08CadaRolSoloAccedeASusModulos 1366 ms
+  ✓ testSinSesionTodaRutaProtegidaRedirigeAlLogin 1173 ms
+  ✓ testCP09UsuarioInactivoNoPuedeIniciarSesion 1424 ms
+  ✓ testCuentaDesactivadaPierdeLaSesionDeInmediato 1217 ms
+  ✓ testRN14LaSesionExpiraPorInactividad 1283 ms
+  ✓ testMensajeGenericoYLimiteDeIntentos 1861 ms
+  ✓ testLoginCorrectoRegeneraLaSesionYAuditaElIngreso 1423 ms
+  ✓ testLaMatrizDePermisosDeLaBaseCoincideConLaDocumentada 1057 ms
+  ✓ testNoSePuedeDesactivarAlUltimoAdministradorNiLaPropiaCuenta 1561 ms
+
+Security/RolesPruebaTest
+  ✓ testTodosLosUsuariosDePruebaInicianSesionConDemo2026YVanASuPantalla 2683 ms
+  ✓ testLasContrasenasSeGuardanComoHashYNoEnTextoPlano 1115 ms
+  ✓ testCadaCuentaTieneSuRolYLasCuentasPropiasSuPersona 1104 ms
+  ✓ testElEstudianteSoloVeSuCuentaYNoLaOperacion 1371 ms
+  ✓ testElPersonalNoTieneCuentaPropiaNiRecargaSinPermiso 1168 ms
+  ✓ testPorteriaIdentificaRolesYVisitantesDesdeElCelular 1219 ms
+  ✓ testLasPantallasDeCadaRolCarganSinErrores 1328 ms
+  ✓ testElCelularDeCamaraSoloPublicaElTipoDeVehiculo 1321 ms
+
+Security/SqlInjectionTest
+  ✓ testCP11BusquedaDeEstudiantesTrataLaEntradaComoDato 1305 ms
+  ✓ testCP11ComodinesDeLikeSeBuscanLiteralmente 1196 ms
+  ✓ testCP11LoginConInyeccionNoAutentica 2275 ms
+  ✓ testCP11PorteriaYReportesConParametrosMaliciosos 1141 ms
+  ✓ testXssLosDatosSeEscapanAntesDeImprimirse 1198 ms
+  ✓ testErroresInternosNoSeMuestranEnPantalla 1291 ms
+
+147 pruebas · 0 fallidas · 0 omitidas · 155.4 s

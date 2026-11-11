@@ -20,10 +20,11 @@ robocopy $raiz $destino /E /NFL /NDL /NJH /NJS /NP /XD .git .claude dist vendor 
 if ($LASTEXITCODE -ge 8) { throw "robocopy fallo ($LASTEXITCODE)" }
 
 # Quitar configuración local, credenciales y archivos generados.
-$quitar = @('.env', 'config\env.php', 'storage\installed.lock')
+$quitar = @('.env', 'config\env.php', 'storage\installed.lock', 'storage\push')
 foreach ($f in $quitar) {
     $ruta = Join-Path $destino $f
-    if (Test-Path $ruta) { Remove-Item -Force $ruta }
+    # storage\push guarda las claves VAPID de esta instalación: cada servidor genera las suyas.
+    if (Test-Path $ruta) { Remove-Item -Recurse -Force $ruta }
 }
 foreach ($dir in @('storage\logs', 'storage\backups', 'storage\receipts')) {
     Get-ChildItem -Path (Join-Path $destino $dir) -File -Force |

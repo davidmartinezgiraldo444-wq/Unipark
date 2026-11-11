@@ -22,14 +22,14 @@ final class AuditoriaTest extends TestCase
         $this->assertSame('EXITO', $ev['resultado']);
         $this->assertTrue(abs(strtotime($ev['creado_en']) - time()) < 120, 'Hora del servidor');
         $detalle = json_decode($ev['detalle_json'], true);
-        $this->assertSame('1050.00', $detalle['valor_anterior']);
+        $this->assertSame('1000.00', $detalle['valor_anterior']);
         $this->assertSame('1200', $detalle['valor_nuevo']);
         $this->assertSame('ESTUDIANTE', $detalle['categoria']);
 
-        $anterior = $this->fila('SELECT * FROM tarifas WHERE id_tarifa = 3');
+        $anterior = $this->fila('SELECT * FROM tarifas WHERE id_tarifa = 8');
         $this->assertTrue($anterior['vigente_hasta'] !== null, 'La tarifa anterior queda cerrada, no borrada');
         $this->assertSame('1200.00', $this->valor("SELECT valor FROM tarifas WHERE tarifa_abierta = 'MOTO-ESTUDIANTE'"));
-        $this->assertSame('1800.00', $this->valor("SELECT valor FROM tarifas WHERE tarifa_abierta = 'MOTO-PROFESOR'"), 'La tarifa de profesor no cambia');
+        $this->assertSame('2000.00', $this->valor("SELECT valor FROM tarifas WHERE tarifa_abierta = 'MOTO-PROFESOR'"), 'La tarifa de profesor no cambia');
     }
 
     public function testCP13AnulacionRegistraElMotivo(): void
@@ -43,11 +43,11 @@ final class AuditoriaTest extends TestCase
     public function testTarifaIgualOValorInvalidoSeRechaza(): void
     {
         $servicio = new ServicioTarifa($this->db());
-        $this->assertRegla('SIN_CAMBIO', fn () => $servicio->cambiar('CARRO', 'ESTUDIANTE', '2050', 1));
+        $this->assertRegla('SIN_CAMBIO', fn () => $servicio->cambiar('CARRO', 'ESTUDIANTE', '2000', 1));
         $this->assertRegla('VALOR_INVALIDO', fn () => $servicio->cambiar('CARRO', 'ESTUDIANTE', '-100', 1));
         $this->assertRegla('VALOR_INVALIDO', fn () => $servicio->cambiar('CARRO', 'PROFESOR', '0', 1));
         $this->assertRegla('CATEGORIA_INVALIDA', fn () => $servicio->cambiar('CARRO', 'VISITANTE', '3000', 1));
-        $this->assertSame(6, (int) $this->valor('SELECT COUNT(*) FROM tarifas'));
+        $this->assertSame(12, (int) $this->valor('SELECT COUNT(*) FROM tarifas'));
     }
 
     public function testLaBitacoraNoSePuedeModificarNiBorrar(): void

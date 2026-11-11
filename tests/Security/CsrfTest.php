@@ -36,7 +36,7 @@ final class CsrfTest extends TestCase
             $r = $this->solicitud('POST', $ruta, $datos + ['_csrf' => str_repeat('0', 64)]);
             $this->assertSame(419, $r->status, $ruta);
         }
-        $this->assertSame('2050.00', $this->valor("SELECT valor FROM tarifas WHERE tarifa_abierta = 'CARRO-ESTUDIANTE'"), 'La tarifa no cambia');
+        $this->assertSame('2000.00', $this->valor("SELECT valor FROM tarifas WHERE tarifa_abierta = 'CARRO-ESTUDIANTE'"), 'La tarifa no cambia');
         $this->assertSame('PAGADO', $this->valor('SELECT estado FROM pagos WHERE id_pago = 7'), 'El pago no se anula');
         $this->assertSame('1', $this->valor('SELECT activo FROM usuarios WHERE id_usuario = 2'), 'La cuenta sigue activa');
         $this->assertSame(0, (int) $this->valor("SELECT COUNT(*) FROM estudiantes WHERE documento = '3000000001'"));
@@ -45,7 +45,7 @@ final class CsrfTest extends TestCase
 
     public function testCP12LoginTambienExigeToken(): void
     {
-        $r = $this->solicitud('POST', '/login', ['login' => 'caja', 'clave' => 'Demo2026*'], false);
+        $r = $this->solicitud('POST', '/login', ['login' => 'caja', 'clave' => 'demo2026*'], false);
         $this->assertSame(419, $r->status);
         $this->assertSame(null, $_SESSION['id_usuario'] ?? null);
     }

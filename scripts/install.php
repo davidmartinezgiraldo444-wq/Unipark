@@ -77,4 +77,4 @@ foreach ($bases as $i => $base) {
 
 $instalador->bloquear();
 echo "\nListo. Inicia la aplicación con:\n  php -S localhost:8000 index.php\n";
-echo "Cuentas: admin" . (isset($opciones['seed']) ? ', porteria, caja, caja2, auditor' : '') . " · contraseña Demo2026*\n";
+echo "Cuentas: admin" . (isset($opciones['seed']) ? ', admin2, porteria(2,3), caja(2,3), auditor(2), estudiante1-3, profesor1-3, trabajador1-3' : '') . " · contraseña demo2026*\n";

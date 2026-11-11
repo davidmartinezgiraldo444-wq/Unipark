@@ -4,6 +4,7 @@
 <?php require __DIR__ . '/head.php'; ?>
 </head>
 <body class="plain">
+<?php require __DIR__ . '/demo_banner.php'; ?>
   <header class="plain-head">
     <a class="brand" href="<?= e(url()) ?>">
       <span class="brand-mark" aria-hidden="true">P</span>

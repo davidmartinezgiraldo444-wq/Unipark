@@ -50,12 +50,17 @@ final class TarifaTest extends TestCase
         $this->assertSame('Profesor', categoria_label('PROFESOR'));
     }
 
-    public function testSoloExistenLosTiposCarroYMoto(): void
+    public function testSeRegistranCuatroTiposYSoloCarroYMotoTienenTarifa(): void
     {
-        $this->assertTrue(ReglasVisita::tipoValido('CARRO'));
-        $this->assertTrue(ReglasVisita::tipoValido('MOTO'));
-        foreach (['carro', 'BICICLETA', '', 'CARRO '] as $tipo) {
+        foreach (['CARRO', 'MOTO', 'BICICLETA', 'PATINETA'] as $tipo) {
+            $this->assertTrue(ReglasVisita::tipoValido($tipo), "Debía aceptar «{$tipo}»");
+        }
+        foreach (['carro', 'AVION', '', 'CARRO '] as $tipo) {
             $this->assertFalse(ReglasVisita::tipoValido($tipo), "Debía rechazar «{$tipo}»");
         }
+        $this->assertTrue(ReglasVisita::tipoTarifable('CARRO'));
+        $this->assertTrue(ReglasVisita::tipoTarifable('MOTO'));
+        $this->assertFalse(ReglasVisita::tipoTarifable('BICICLETA'), 'Bicicleta: sin tarifa definida');
+        $this->assertFalse(ReglasVisita::tipoTarifable('PATINETA'), 'Patineta: sin tarifa definida');
     }
 }

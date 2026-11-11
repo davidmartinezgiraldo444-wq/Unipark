@@ -7,7 +7,7 @@ use App\Services\ReglasVisita;
 
 final class TarifaRepository extends Repository
 {
-    /** Tarifa que rige en este momento para el tipo de vehículo y la categoría indicados. */
+    /** Tarifa por día que rige en este momento para el tipo de vehículo y la categoría indicados. */
     public function vigente(string $tipo, string $categoria): ?array
     {
         return $this->one(
@@ -25,7 +25,7 @@ final class TarifaRepository extends Repository
     public function vigentes(): array
     {
         $r = [];
-        foreach (ReglasVisita::TIPOS as $tipo) {
+        foreach (ReglasVisita::TIPOS_TARIFABLES as $tipo) {
             foreach (ReglasVisita::CATEGORIAS as $categoria) {
                 $r[$tipo][$categoria] = $this->vigente($tipo, $categoria);
             }

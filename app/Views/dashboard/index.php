@@ -32,7 +32,42 @@
       <span class="kpi-note"><?= e($recaudo['cantidad']) ?> pagos</span>
     </div>
   <?php endif; ?>
+  <?php if ($ocupacion['BICICLETA'] > 0): ?>
+    <div class="kpi">
+      <span class="kpi-label">Bicicletas dentro</span>
+      <span class="kpi-value"><?= e($ocupacion['BICICLETA']) ?></span>
+    </div>
+  <?php endif; ?>
 </section>
+
+<?php if ($gestion !== null): ?>
+<section class="kpis mt-12" aria-label="Control">
+  <?php if (can('CLASIFICACION_RESOLVER', 'REPORTE_VER')): ?>
+    <a class="kpi<?= $gestion['eventos'] > 0 ? ' kpi-warn' : '' ?>" href="<?= e(url(can('CLASIFICACION_RESOLVER') ? 'porteria' : 'reportes?tab=eventos')) ?>">
+      <span class="kpi-label">Esperando al portero</span>
+      <span class="kpi-value"><?= e($gestion['eventos']) ?></span>
+      <span class="kpi-note">Ingresos o salidas por confirmar</span>
+    </a>
+  <?php endif; ?>
+  <?php if (can('REPORTE_CAJA')): ?>
+    <a class="kpi<?= (int) $gestion['deuda']['cantidad'] > 0 ? ' kpi-warn' : '' ?>" href="<?= e(url('reportes?tab=cobros&estado_cobro=PENDIENTE')) ?>">
+      <span class="kpi-label">Deuda pendiente</span>
+      <span class="kpi-value"><?= e(money($gestion['deuda']['total'])) ?></span>
+      <span class="kpi-note"><?= e($gestion['deuda']['cantidad']) ?> cobros sin pagar</span>
+    </a>
+    <a class="kpi" href="<?= e(url('reportes?tab=movimientos')) ?>">
+      <span class="kpi-label">Recargas netas de hoy</span>
+      <span class="kpi-value"><?= e(money($gestion['recargas'])) ?></span>
+      <span class="kpi-note">Débitos automáticos: <?= e(money($gestion['debitos'])) ?></span>
+    </a>
+    <a class="kpi<?= $gestion['sin_procesar'] > 0 ? ' kpi-warn' : '' ?>" href="<?= e(url(can('PAGO_REGISTRAR') ? 'caja' : 'reportes?tab=cobros')) ?>">
+      <span class="kpi-label">Cobros sin procesar</span>
+      <span class="kpi-value"><?= e($gestion['sin_procesar']) ?></span>
+      <span class="kpi-note"><?= $gestion['sin_procesar'] > 0 ? 'Revisa que el cobro automático esté activo' : 'Cobro automático al día' ?></span>
+    </a>
+  <?php endif; ?>
+</section>
+<?php endif; ?>
 
 <div class="grid-main">
   <section class="panel panel-flush">

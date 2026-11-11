@@ -3,9 +3,21 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
-/** Lector mínimo de archivos .env. Las variables ya definidas en el entorno tienen prioridad. */
+/**
+ * Configuración de la instalación (config/env.php y .env).
+ *
+ * Los valores se guardan en un arreglo de PHP propio de cada petición, NUNCA con putenv():
+ * Apache en Windows atiende peticiones en hilos del mismo proceso, y putenv()/getenv() no son
+ * seguros entre hilos. Con putenv(), una petición podía leer DB_PASS vacío mientras otra cargaba la
+ * configuración (auditoría del 08/11/2026: ~17 % de fallos de conexión con peticiones simultáneas).
+ *
+ * Prioridad: variables reales del entorno del proceso o del servidor (solo se leen) > archivos.
+ */
 final class Env
 {
+    /** @var array<string,string> */
+    private static array $valores = [];
+
     public static function load(string $archivo): void
     {
         if (!is_file($archivo)) {
@@ -17,11 +29,7 @@ final class Env
                 continue;
             }
             [$clave, $valor] = array_map('trim', explode('=', $linea, 2));
-            $valor = trim($valor, "\"'");
-            if (getenv($clave) === false) {
-                putenv($clave . '=' . $valor);
-                $_ENV[$clave] = $valor;
-            }
+            self::$valores[$clave] ??= trim($valor, "\"'");
         }
     }
 
@@ -39,16 +47,47 @@ final class Env
             return;
         }
         foreach ($valores as $clave => $valor) {
-            if (getenv((string) $clave) === false) {
-                putenv($clave . '=' . $valor);
-                $_ENV[$clave] = (string) $valor;
-            }
+            self::$valores[(string) $clave] ??= (string) $valor;
         }
     }
 
+    /**
+     * Valores de una INSTANCIA (por ejemplo, la copia de demostración en htdocs/UniParkDemo): un archivo PHP que
+     * devuelve un arreglo. Tienen prioridad sobre config/env.php y .env, así la instancia usa su propia base,
+     * su propia cookie de sesión y su propia pasarela sin duplicar el código.
+     */
+    public static function forzarDesde(string $archivo): void
+    {
+        $valores = is_file($archivo) ? require $archivo : null;
+        if (!is_array($valores)) {
+            throw new \RuntimeException('La configuración de la instancia no existe o no es válida: ' . basename($archivo));
+        }
+        foreach ($valores as $clave => $valor) {
+            self::set((string) $clave, (string) $valor);
+        }
+    }
+
+    /** Valor fijado por el propio proceso (pruebas, scripts). Tiene prioridad sobre los archivos. */
+    public static function set(string $clave, string $valor): void
+    {
+        self::$valores[$clave] = $valor;
+        self::$forzados[$clave] = true;
+    }
+
+    /** @var array<string,true> */
+    private static array $forzados = [];
+
     public static function get(string $clave, ?string $defecto = null): ?string
     {
-        $valor = getenv($clave);
-        return ($valor === false || $valor === '') ? $defecto : $valor;
+        if (isset(self::$forzados[$clave])) {
+            return self::$valores[$clave];
+        }
+        // Lectura del entorno real (por ejemplo, variables del hosting). getenv() solo lee: es seguro.
+        $real = getenv($clave);
+        if ($real !== false && $real !== '') {
+            return $real;
+        }
+        $valor = self::$valores[$clave] ?? null;
+        return ($valor === null || $valor === '') ? $defecto : $valor;
     }
 }

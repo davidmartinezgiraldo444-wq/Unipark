@@ -5,9 +5,11 @@ namespace App\Repositories;
 
 final class UsuarioRepository extends Repository
 {
-    private const SELECT = 'SELECT u.*, r.nombre AS rol, r.activo AS rol_activo
+    private const SELECT = 'SELECT u.*, r.nombre AS rol, r.activo AS rol_activo,
+                                   e.documento AS persona_documento, e.categoria AS persona_categoria
                               FROM usuarios u
-                              JOIN roles r ON r.id_rol = u.id_rol';
+                              JOIN roles r ON r.id_rol = u.id_rol
+                         LEFT JOIN estudiantes e ON e.id_estudiante = u.id_estudiante';
 
     public function find(int $id): ?array
     {
@@ -49,18 +51,18 @@ final class UsuarioRepository extends Repository
         return $this->one('SELECT * FROM roles WHERE id_rol = ? AND activo = 1', [$idRol]);
     }
 
-    public function create(string $nombre, string $login, string $hash, int $idRol): int
+    public function create(string $nombre, string $login, string $hash, int $idRol, ?int $idEstudiante = null): int
     {
         return $this->insert(
-            'INSERT INTO usuarios (nombre, login, password_hash, id_rol, activo, debe_cambiar_clave)
-             VALUES (?, ?, ?, ?, 1, 1)',
-            [$nombre, $login, $hash, $idRol]
+            'INSERT INTO usuarios (nombre, login, password_hash, id_rol, id_estudiante, activo, debe_cambiar_clave)
+             VALUES (?, ?, ?, ?, ?, 1, 1)',
+            [$nombre, $login, $hash, $idRol, $idEstudiante]
         );
     }
 
-    public function update(int $id, string $nombre, int $idRol): void
+    public function update(int $id, string $nombre, int $idRol, ?int $idEstudiante = null): void
     {
-        $this->run('UPDATE usuarios SET nombre = ?, id_rol = ? WHERE id_usuario = ?', [$nombre, $idRol, $id]);
+        $this->run('UPDATE usuarios SET nombre = ?, id_rol = ?, id_estudiante = ? WHERE id_usuario = ?', [$nombre, $idRol, $idEstudiante, $id]);
     }
 
     public function setActivo(int $id, bool $activo): void

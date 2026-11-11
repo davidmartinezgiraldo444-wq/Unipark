@@ -4,15 +4,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UniPark · Parqueadero universitario</title>
-  <meta name="description" content="UniPark controla la entrada, el pago y la salida del parqueadero universitario con tarifa fija por tipo de vehículo, roles definidos y trazabilidad completa.">
+  <title>UniPark · Gestión de parqueadero</title>
+  <meta name="description" content="UniPark controla la entrada, el pago y la salida del parqueadero con cobro diario por tipo de vehículo, roles definidos y trazabilidad completa.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= e(asset('css/styles.css')) ?>">
+  <link rel="stylesheet" href="<?= e(asset('css/senaletica.css')) ?>">
   <link rel="icon" href="<?= e(asset('img/logo.svg')) ?>" type="image/svg+xml">
 </head>
 <body>
+<?php require __DIR__ . "/layouts/demo_banner.php"; ?>
 
   <header class="site-header">
     <div class="wrap header-inner">
@@ -36,16 +38,16 @@
     <section class="hero">
       <div class="wrap hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow">Corporación Universitaria Lasallista · Parqueadero</p>
+          <p class="eyebrow">Gestión de parqueadero</p>
           <h1>Entrada, pago y salida.<br><span class="mark">En ese orden.</span></h1>
-          <p class="lead">UniPark es el sistema que registra cada visita al parqueadero universitario. Portería registra la entrada, Caja confirma el pago y la salida solo se autoriza cuando ese pago existe.</p>
+          <p class="lead">UniPark registra cada visita al parqueadero. Portería escanea el carnet con el celular y la cámara reconoce el vehículo; el cobro del día se descuenta del saldo antes de la salida, y la salida solo verifica que esté pagado.</p>
           <div class="hero-actions">
             <a class="btn btn-ink" href="<?= e(url($conectado ? 'panel' : 'login')) ?>">Ingresar al sistema</a>
             <a class="btn btn-line" href="#flujo">Ver el flujo</a>
           </div>
           <dl class="hero-facts">
             <div><dt>Tarifa</dt><dd>Fija por tipo</dd></div>
-            <div><dt>Vehículos</dt><dd>Carro y moto</dd></div>
+            <div><dt>Vehículos</dt><dd>Carro, moto y bicicleta</dd></div>
             <div><dt>Placa o foto</dt><dd>No se guarda</dd></div>
           </dl>
         </div>
@@ -63,11 +65,16 @@
               <span class="v mono">CC ••••• 4821</span>
             </div>
             <div class="ticket-row">
-              <span class="k">Tipo</span>
+              <span class="k">Saldo</span>
+              <span class="v mono" data-field="saldo">—</span>
+            </div>
+            <div class="ticket-row">
+              <span class="k">Cámara</span>
               <span class="v">
                 <span class="seg" role="radiogroup" aria-label="Tipo de vehículo">
                   <button type="button" role="radio" aria-checked="true" data-tipo="CARRO">Carro</button>
                   <button type="button" role="radio" aria-checked="false" data-tipo="MOTO">Moto</button>
+                  <button type="button" role="radio" aria-checked="false" data-tipo="BICICLETA">Bici</button>
                 </span>
               </span>
             </div>
@@ -76,7 +83,7 @@
               <span class="v mono" data-field="entrada">—</span>
             </div>
             <div class="ticket-row">
-              <span class="k">Pago</span>
+              <span class="k">Cobro del día</span>
               <span class="v mono" data-field="pago">—</span>
             </div>
             <div class="ticket-row">
@@ -90,12 +97,12 @@
           </div>
 
           <div class="sim-actions">
-            <button class="act" type="button" data-action="entrada"><span class="act-role">Portería</span>Registrar entrada</button>
-            <button class="act" type="button" data-action="pago"><span class="act-role">Caja</span>Registrar pago</button>
-            <button class="act" type="button" data-action="salida"><span class="act-role">Portería</span>Autorizar salida</button>
+            <button class="act" type="button" data-action="entrada"><span class="act-role">Acceso</span>Escanear carné</button>
+            <button class="act" type="button" data-action="pago"><span class="act-role">Sistema</span>Pasan 15 min</button>
+            <button class="act" type="button" data-action="salida"><span class="act-role">Acceso</span>Salir</button>
           </div>
 
-          <p class="sim-msg" role="status" aria-live="polite" data-field="mensaje">Intenta autorizar la salida antes de pagar.</p>
+          <p class="sim-msg" role="status" aria-live="polite" data-field="mensaje">Prueba carro (no alcanza el saldo) y moto (sí alcanza).</p>
         </div>
       </div>
     </section>
@@ -113,22 +120,22 @@
           <li class="step">
             <span class="step-n mono">01</span>
             <span class="step-role">Portería</span>
-            <h3>Registra la entrada</h3>
-            <p>Busca a la persona por documento y selecciona carro o moto. El sistema verifica que no tenga otra visita abierta y guarda la tarifa vigente de su categoría: estudiante o profesor.</p>
+            <h3>Identidad y vehículo</h3>
+            <p>La persona escanea su carné o cédula y el sistema valida que esté activa. Después la cámara clasifica el vehículo (carro, moto o bicicleta); si la IA no está segura, el portero lo confirma. Se guarda la tarifa vigente de su categoría.</p>
             <span class="step-out mono">Visita EN_CURSO</span>
           </li>
           <li class="step">
             <span class="step-n mono">02</span>
-            <span class="step-role">Caja</span>
-            <h3>Confirma el pago</h3>
-            <p>Caja ve las visitas pendientes, cobra el valor exacto y registra el medio de pago. Se emite un comprobante con consecutivo único. Una visita, un pago.</p>
-            <span class="step-out mono">Pago PAGADO</span>
+            <span class="step-role">Sistema</span>
+            <h3>Cobro del día</h3>
+            <p>A los 15 minutos se genera un solo cobro por persona y día, que se descuenta del saldo. Si el saldo no alcanza, queda pendiente, se avisa al celular y se paga en Caja con comprobante de consecutivo único.</p>
+            <span class="step-out mono">Cobro PAGADO</span>
           </li>
           <li class="step">
             <span class="step-n mono">03</span>
             <span class="step-role">Portería</span>
             <h3>Autoriza la salida</h3>
-            <p>El sistema comprueba que la visita esté abierta y pagada. Si falta el pago, la salida no se registra y la persona es remitida a Caja.</p>
+            <p>Identidad primero; luego se verifica que el vehículo coincida con la visita abierta y que el día esté pagado. La salida nunca cobra: si hay deuda, no se registra y la persona es remitida a Caja.</p>
             <span class="step-out mono">Visita CERRADA</span>
           </li>
         </ol>
@@ -145,15 +152,15 @@
       <div class="wrap tarifa-grid">
         <header class="section-head">
           <p class="eyebrow">Tarifa</p>
-          <h2>Un valor fijo. Sin cobro por horas.</h2>
-          <p>El valor depende del vehículo y de si eres estudiante o profesor. El tiempo de permanencia no cambia lo que se paga, y cada visita conserva el valor aplicado al entrar.</p>
+          <h2>Un cobro por día. 15 minutos sin cobro.</h2>
+          <p>El valor depende del vehículo y de si eres estudiante, profesor o trabajador. Se cobra una sola vez por día aunque entres y salgas varias veces, y no se cobra si sales antes de 15 minutos. Bicicletas y visitantes no pagan.</p>
         </header>
 
         <div class="tarifas">
           <?php foreach (['CARRO', 'MOTO'] as $tipo): ?>
             <div class="tarifa">
-              <span class="tarifa-tipo mono"><?= e($tipo) ?></span>
-              <?php foreach (['ESTUDIANTE' => 'Estudiante', 'PROFESOR' => 'Profesor'] as $cat => $etiqueta):
+              <span class="tarifa-tipo mono"><?= e(tipo_label($tipo)) ?></span>
+              <?php foreach (['ESTUDIANTE' => 'Estudiante', 'PROFESOR' => 'Profesor', 'TRABAJADOR' => 'Trabajador'] as $cat => $etiqueta):
                   $t = $tarifas[$tipo][$cat] ?? null; ?>
                 <div class="tarifa-fila">
                   <span class="tarifa-nota"><?= e($etiqueta) ?></span>
@@ -163,9 +170,9 @@
             </div>
           <?php endforeach; ?>
           <ul class="tarifa-list">
-            <li>Sin fracciones, multas, reservas ni mensualidades.</li>
+            <li>Valor por día: sin fracciones, multas ni cobro por horas.</li>
             <li>Cada cambio de tarifa registra quién lo hizo y desde cuándo rige.</li>
-            <li>El tiempo transcurrido se muestra como información, nunca como cobro.</li>
+            <li>El pago se descuenta del saldo antes de llegar a la salida.</li>
           </ul>
         </div>
       </div>
@@ -262,9 +269,9 @@
           <div class="data-col">
             <h3>Se registra</h3>
             <ul>
-              <li>Documento, nombres, apellidos y categoría (estudiante o profesor)</li>
-              <li>Tipo de vehículo por visita: carro o moto</li>
-              <li>Hora de entrada, pago y salida</li>
+              <li>Documento, nombres, apellidos y categoría (estudiante, profesor, trabajador o visitante)</li>
+              <li>Tipo de vehículo por visita (carro, moto o bicicleta), reconocido por IA o confirmado por el portero; nunca placas</li>
+              <li>Hora de entrada, cobro y salida, y movimientos de saldo</li>
               <li>Funcionario responsable de cada paso</li>
               <li>Tarifa aplicada y consecutivo del recibo</li>
             </ul>
@@ -311,7 +318,7 @@
         <span class="brand-mark" aria-hidden="true">P</span>
         <span class="brand-name">UniPark</span>
       </div>
-      <p>Sistema de control de acceso y operación del parqueadero universitario · Corporación Universitaria Lasallista</p>
+      <p>Sistema de control de acceso y operación del parqueadero</p>
       <p class="mono">© 2026</p>
     </div>
   </footer>

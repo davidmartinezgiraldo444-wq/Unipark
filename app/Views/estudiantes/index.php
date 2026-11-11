@@ -3,10 +3,9 @@
   <div>
     <p class="eyebrow">Personas</p>
     <h1>Estudiantes y profesores</h1>
-    <p>Solo se guardan los datos necesarios para identificar a la persona. La categoría define la tarifa. No se registra información del vehículo.</p>
   </div>
   <?php if ($gestiona): ?>
-    <div class="actions"><a class="btn btn-ink" href="<?= e(url('estudiantes/nuevo')) ?>">Registrar persona</a></div>
+    <div class="actions"><?php if (can('PERSONA_IMPORTAR')): ?><a class="btn btn-ghost" href="<?= e(url('estudiantes/importar')) ?>">Importar base institucional</a><?php endif; ?><a class="btn btn-ink" href="<?= e(url('estudiantes/nuevo')) ?>">Registrar persona</a></div>
   <?php endif; ?>
 </header>
 

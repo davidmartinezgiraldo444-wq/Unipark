@@ -1,5 +1,7 @@
 <?php
-$nombres = ['abiertas' => 'Visitas abiertas', 'visitas' => 'Entradas y salidas', 'pagos' => 'Pagos', 'recaudo' => 'Recaudo'];
+$nombres = ['abiertas' => 'Visitas abiertas', 'visitas' => 'Entradas y salidas', 'pagos' => 'Pagos', 'recaudo' => 'Recaudo',
+            'cobros' => 'Cobros diarios', 'movimientos' => 'Movimientos de saldo', 'saldos' => 'Saldos', 'eventos' => 'Eventos de acceso', 'recargas' => 'Recargas en línea'];
+$nuevas = ['cobros', 'movimientos', 'saldos', 'eventos', 'recargas'];
 $query = static fn (array $extra = []) => http_build_query(array_filter($extra + $filtros + ['tab' => $tab], static fn ($v) => $v !== ''));
 $sel = static fn (string $campo, string $valor) => $filtros[$campo] === $valor ? 'selected' : '';
 $total = 0.0;
@@ -13,6 +15,11 @@ $total = 0.0;
         'visitas'  => 'Entradas y salidas por fecha, tipo de vehículo, estado y funcionario.',
         'pagos'    => 'Pagos por fecha, medio, cajero y consecutivo, incluidos los anulados.',
         'recaudo'  => 'Total recaudado por día, cajero y medio de pago. Solo pagos válidos.',
+        'cobros'      => 'Cobros del día y diferencias por cambio de vehículo, con su estado y pago.',
+        'movimientos' => 'Recargas, débitos automáticos, reintegros y reversos del saldo. Nada se borra.',
+        'saldos'      => 'Saldo disponible y valor pendiente por persona.',
+        'eventos'     => 'Cada pasada por la portería: identidad, detección de la IA, confirmación y portero.',
+        'recargas'    => 'Recargas voluntarias en línea con su referencia, transacción de la pasarela y estado. Solo las aprobadas suman saldo.',
     } ?></p>
   </div>
   <?php if (can('REPORTE_EXPORTAR')): ?>
@@ -30,26 +37,42 @@ $total = 0.0;
 
 <form class="filters" method="get" action="<?= e(url('reportes')) ?>">
   <input type="hidden" name="tab" value="<?= e($tab) ?>">
-  <?php if ($tab !== 'abiertas'): ?>
+  <?php if (!in_array($tab, ['abiertas', 'saldos'], true)): ?>
     <div class="field"><label for="desde">Desde</label><input id="desde" name="desde" type="date" value="<?= e($filtros['desde']) ?>"></div>
     <div class="field"><label for="hasta">Hasta</label><input id="hasta" name="hasta" type="date" value="<?= e($filtros['hasta']) ?>"></div>
   <?php endif; ?>
+  <?php if (in_array($tab, $nuevas, true)): ?>
+    <div class="field"><label for="texto">Persona</label><input id="texto" name="texto" type="search" value="<?= e($filtros['texto']) ?>" placeholder="Documento o nombre" maxlength="60"></div>
+  <?php endif; ?>
+  <?php if (!in_array($tab, ['movimientos', 'saldos', 'recargas'], true)): ?>
   <div class="field">
-    <label for="tipo">Tipo</label>
+    <label for="tipo">Vehículo</label>
     <select id="tipo" name="tipo">
       <option value="">Todos</option>
-      <option value="CARRO" <?= $sel('tipo', 'CARRO') ?>>Carro</option>
-      <option value="MOTO" <?= $sel('tipo', 'MOTO') ?>>Moto</option>
+      <?php foreach (\App\Services\ReglasVisita::TIPOS as $tv): ?><option value="<?= e($tv) ?>" <?= $sel('tipo', $tv) ?>><?= e(tipo_label($tv)) ?></option><?php endforeach; ?>
     </select>
   </div>
+  <?php endif; ?>
+  <?php if (in_array($tab, ['abiertas', 'visitas', 'pagos', 'recaudo', 'cobros', 'saldos'], true)): ?>
   <div class="field">
     <label for="categoria">Categoría</label>
     <select id="categoria" name="categoria">
       <option value="">Todas</option>
-      <option value="ESTUDIANTE" <?= $sel('categoria', 'ESTUDIANTE') ?>>Estudiante</option>
-      <option value="PROFESOR" <?= $sel('categoria', 'PROFESOR') ?>>Profesor</option>
+      <?php foreach (['ESTUDIANTE', 'PROFESOR', 'TRABAJADOR', 'VISITANTE'] as $cat): ?><option value="<?= $cat ?>" <?= $sel('categoria', $cat) ?>><?= e(categoria_label($cat)) ?></option><?php endforeach; ?>
     </select>
   </div>
+  <?php endif; ?>
+  <?php if ($tab === 'cobros'): ?>
+    <div class="field"><label for="estado_cobro">Estado</label><select id="estado_cobro" name="estado_cobro"><option value="">Todos</option><?php foreach (['PENDIENTE', 'PAGADO', 'ANULADO'] as $es): ?><option value="<?= $es ?>" <?= $sel('estado_cobro', $es) ?>><?= $es ?></option><?php endforeach; ?></select></div>
+    <div class="field"><label for="concepto">Concepto</label><select id="concepto" name="concepto"><option value="">Todos</option><option value="DIARIO" <?= $sel('concepto', 'DIARIO') ?>>Cobro del día</option><option value="DIFERENCIA" <?= $sel('concepto', 'DIFERENCIA') ?>>Diferencia</option></select></div>
+  <?php elseif ($tab === 'movimientos'): ?>
+    <div class="field"><label for="tipo_mov">Movimiento</label><select id="tipo_mov" name="tipo_mov"><option value="">Todos</option><?php foreach (['RECARGA' => 'Recarga', 'DEBITO' => 'Débito', 'REINTEGRO' => 'Reintegro', 'REVERSO_RECARGA' => 'Reverso de recarga'] as $c => $n): ?><option value="<?= $c ?>" <?= $sel('tipo_mov', $c) ?>><?= $n ?></option><?php endforeach; ?></select></div>
+  <?php elseif ($tab === 'recargas'): ?>
+    <div class="field"><label for="estado_recarga">Estado</label><select id="estado_recarga" name="estado_recarga"><option value="">Todos</option><?php foreach (['CREADA', 'PENDIENTE', 'APROBADA', 'RECHAZADA', 'ANULADA', 'ERROR', 'CANCELADA', 'EXPIRADA'] as $es): ?><option value="<?= $es ?>" <?= $sel('estado_recarga', $es) ?>><?= e(recarga_label($es)) ?></option><?php endforeach; ?></select></div>
+  <?php elseif ($tab === 'eventos'): ?>
+    <div class="field"><label for="estado_evento">Estado</label><select id="estado_evento" name="estado_evento"><option value="">Todos</option><?php foreach (['EN_CAPTURA', 'PENDIENTE_PORTERO', 'CONFIRMADO', 'RECHAZADO', 'EXPIRADO'] as $es): ?><option value="<?= $es ?>" <?= $sel('estado_evento', $es) ?>><?= $es ?></option><?php endforeach; ?></select></div>
+    <div class="field"><label for="metodo">Método</label><select id="metodo" name="metodo"><option value="">Todos</option><option value="IA" <?= $sel('metodo', 'IA') ?>>IA</option><option value="MANUAL" <?= $sel('metodo', 'MANUAL') ?>>Portero</option></select></div>
+  <?php endif; ?>
   <?php if ($tab === 'visitas'): ?>
     <div class="field">
       <label for="estado">Estado</label>
@@ -84,7 +107,7 @@ $total = 0.0;
       </select>
     </div>
   <?php endif; ?>
-  <?php if ($tab !== 'abiertas'): ?>
+  <?php if (in_array($tab, ['visitas', 'pagos', 'recaudo', 'movimientos'], true)): ?>
     <div class="field">
       <label for="usuario">Funcionario</label>
       <select id="usuario" name="usuario">
@@ -98,6 +121,8 @@ $total = 0.0;
 
 <?php if (!$filas): ?>
   <div class="table-wrap"><p class="empty">No hay registros con estos filtros.</p></div>
+<?php elseif (in_array($tab, $nuevas, true)): ?>
+  <?php require __DIR__ . '/_' . $tab . '.php'; ?>
 <?php elseif ($tab === 'abiertas' || $tab === 'visitas'): ?>
   <div class="table-wrap">
     <table class="table">
@@ -166,3 +191,10 @@ $total = 0.0;
   </div>
 <?php endif; ?>
 <?php if (count($filas) >= 500): ?><p class="field-hint panel-note">Se muestran los 500 registros más recientes. Ajusta los filtros para acotar el resultado.</p><?php endif; ?>
+
+<?php if ($tab === 'eventos'): ?>
+  <?php require __DIR__ . '/_calibracion.php'; ?>
+<?php endif; ?>
+<?php if ($tab === 'recargas'): ?>
+  <?php require __DIR__ . '/_conciliacion.php'; ?>
+<?php endif; ?>

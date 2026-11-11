@@ -48,7 +48,7 @@ final class EstudianteController extends Controller
             $id = (new EstudianteRepository($this->db()))->create($datos);
         } catch (PDOException $e) {
             if (Database::isDuplicate($e)) {
-                return $this->form(null, $datos, ['documento' => 'Ya existe una persona con ese documento.'], 422);
+                return $this->form(null, $datos, self::duplicado($e), 422);
             }
             throw $e;
         }
@@ -79,7 +79,7 @@ final class EstudianteController extends Controller
             $repo->update($id, $datos);
         } catch (PDOException $e) {
             if (Database::isDuplicate($e)) {
-                return $this->form($estudiante, $datos, ['documento' => 'Ya existe una persona con ese documento.'], 422);
+                return $this->form($estudiante, $datos, self::duplicado($e), 422);
             }
             throw $e;
         }
@@ -118,6 +118,8 @@ final class EstudianteController extends Controller
             'titulo'     => $estudiante['nombres'] . ' ' . $estudiante['apellidos'],
             'estudiante' => $estudiante,
             'visitas'    => (new VisitaRepository($this->db()))->historialEstudiante($id),
+            'cobros'     => can('REPORTE_CAJA', 'COBRO_ANULAR') ? (new \App\Repositories\CobroRepository($this->db()))->dePersona($id, 60) : [],
+            'movimientos' => can('REPORTE_CAJA', 'SALDO_REVERSAR') ? (new \App\Repositories\SaldoRepository($this->db()))->reporte(['id_estudiante' => $id], 60) : [],
         ]);
     }
 
@@ -140,6 +142,7 @@ final class EstudianteController extends Controller
             'correo'    => mb_strtolower($request->input('correo')),
             'telefono'  => $request->input('telefono'),
             'categoria' => $request->input('categoria', 'ESTUDIANTE'),
+            'codigo_carnet' => strtoupper(str_replace(' ', '', $request->input('codigo_carnet'))),
         ];
     }
 
@@ -155,7 +158,15 @@ final class EstudianteController extends Controller
             ->email('correo', $d['correo'])
             ->max('correo', $d['correo'], 120, 'El correo')
             ->telefono('telefono', $d['telefono'])
-            ->in('categoria', $d['categoria'], ReglasVisita::CATEGORIAS, 'Selecciona si es estudiante o profesor.')
+            ->max('codigo_carnet', $d['codigo_carnet'], 40, 'El código del carnet')
+            ->in('categoria', $d['categoria'], array_merge(ReglasVisita::CATEGORIAS, [ReglasVisita::VISITANTE]), 'Selecciona si es estudiante, profesor, trabajador o visitante.')
             ->errors();
+    }
+
+    private static function duplicado(PDOException $e): array
+    {
+        return str_contains($e->getMessage(), 'uq_estudiantes_carnet')
+            ? ['codigo_carnet' => 'Ese código de carnet ya está asignado a otra persona.']
+            : ['documento' => 'Ya existe una persona con ese documento.'];
     }
 }

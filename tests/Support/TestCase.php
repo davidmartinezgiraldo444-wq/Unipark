@@ -83,6 +83,14 @@ abstract class TestCase
         return (new Kernel())->handle($request);
     }
 
+    /** Envía un POST JSON de servidor a servidor (webhook): sin sesión, sin CSRF, con cuerpo y cabeceras. */
+    protected function webhook(string $ruta, string $cuerpo, array $cabeceras = []): Response
+    {
+        $_SESSION = [];
+        $cabeceras = array_change_key_case($cabeceras, CASE_LOWER);
+        return (new Kernel())->handle(new Request('POST', $ruta, [], [], '127.0.0.1', $cuerpo, $cabeceras));
+    }
+
     // --- Aserciones ---------------------------------------------------------
 
     protected function assertTrue(mixed $valor, string $mensaje = 'Se esperaba verdadero'): void

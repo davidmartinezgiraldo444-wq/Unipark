@@ -1,0 +1,5 @@
+documento;codigo_carnet;nombres;apellidos;categoria;programa;correo;estado
+3000000001;E-3000000001;Persona;Ejemplo Uno;Estudiante;Ingeniería;persona1@correo.test;Activo
+3000000002;;Persona;Ejemplo Dos;Docente;Facultad de Ciencias;;Activo
+3000000003;;Persona;Ejemplo Tres;Administrativo;Biblioteca;;Retirado
+3000000004;;Persona;;Estudiante;;;

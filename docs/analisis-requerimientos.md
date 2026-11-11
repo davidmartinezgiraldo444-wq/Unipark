@@ -1,6 +1,6 @@
 # Análisis de requerimientos · UniPark
 
-Resumen del documento base *Análisis de requerimientos y diseño preliminar* (Corporación Universitaria Lasallista, Bases de Datos, seguimiento 1, 15/10/2026), con el estado de implementación de cada punto.
+Resumen del documento base *Análisis de requerimientos y diseño preliminar* (Bases de Datos, seguimiento 1, 15/10/2026), con el estado de implementación de cada punto.
 
 ## 1. Propósito
 

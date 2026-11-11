@@ -55,7 +55,7 @@ Las pruebas de integración se conectan con la **cuenta de la aplicación** (`DB
 ## Resultado de referencia
 
 ```
-78 pruebas · 0 fallidas · 0 omitidas · ~40 s
+147 pruebas · 0 fallidas · 0 omitidas · ~155 s (08/11/2026)
 ```
 
 Windows 11, PHP 8.2.12 y MariaDB 10.4.32 (XAMPP), 05/11/2026. La salida completa está en `docs/evidencias/`.

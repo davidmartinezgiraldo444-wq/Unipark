@@ -12,6 +12,7 @@
 
   <form class="auth-form" method="post" action="<?= e(url('login')) ?>" novalidate>
     <?= csrf_field() ?>
+    <?php if (!empty($volver)): ?><input type="hidden" name="volver" value="<?= e($volver) ?>"><?php endif; ?>
 
     <div class="field">
       <label for="login">Usuario o correo</label>

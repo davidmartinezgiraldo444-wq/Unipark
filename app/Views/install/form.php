@@ -76,5 +76,5 @@
     <button class="btn btn-ink btn-block" type="submit" <?= $cumple ? '' : 'disabled' ?>>Instalar UniPark</button>
   </form>
 
-  <p class="auth-help">Todas las cuentas iniciales usan la contraseña <span class="mono">Demo2026*</span>. Cada persona puede cambiarla desde «Cambiar contraseña» después de ingresar.</p>
+  <p class="auth-help">Todas las cuentas iniciales usan la contraseña <span class="mono">demo2026*</span>. Cada persona puede cambiarla desde «Cambiar contraseña» después de ingresar.</p>
 </div>

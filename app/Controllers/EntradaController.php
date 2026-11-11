@@ -20,19 +20,23 @@ final class EntradaController extends Controller
         $documento = $request->query('documento');
         $estudiante = null;
         $visita = null;
+        $abiertas = [];
+        $visitante = null;
         $error = null;
 
         if ($documento !== '') {
             if (!Validator::esDocumento($documento)) {
                 $error = 'Escribe un documento válido: entre 5 y 20 caracteres, sin espacios.';
             } else {
-                $estudiante = (new EstudianteRepository($this->db()))->findByDocumento($documento);
+                $estudiante = (new EstudianteRepository($this->db()))->findByCodigo(strtoupper($documento));
                 if ($estudiante === null) {
-                    $error = 'No hay un estudiante registrado con ese documento. Remítelo a Administración para su registro.';
+                    // Documento no registrado: se clasifica como visitante (sin cobro).
+                    $visitante = strtoupper($documento);
                 } elseif ((int) $estudiante['activo'] !== 1) {
-                    $error = 'El estudiante está inactivo. No puede registrar entradas.';
+                    $error = 'La persona está inactiva. No puede registrar entradas.';
                 } else {
-                    $visita = (new VisitaRepository($this->db()))->abiertaDeEstudiante((int) $estudiante['id_estudiante']);
+                    $abiertas = (new VisitaRepository($this->db()))->abiertasDePersona((int) $estudiante['id_estudiante']);
+                    $visita = $estudiante['categoria'] === 'VISITANTE' ? null : ($abiertas[0] ?? null);
                 }
             }
         }
@@ -40,10 +44,12 @@ final class EntradaController extends Controller
         $visitas = new VisitaRepository($this->db());
         return $this->view('porteria/index', [
             'titulo'     => 'Portería',
-            'scripts'    => ['entrada.js'],
+            'scripts'    => ['entrada.js', 'latido.js', 'avisos.js'],
             'documento'  => $documento,
             'estudiante' => $estudiante,
             'visita'     => $visita,
+            'abiertas'   => $abiertas,
+            'visitante'  => $visitante,
             'error'      => $error,
             'tarifas'    => (new TarifaRepository($this->db()))->vigentes(),
             'ocupacion'  => $visitas->ocupacion(),
@@ -55,18 +61,23 @@ final class EntradaController extends Controller
     {
         $idEstudiante = $request->int('id_estudiante');
         $documento = $request->input('documento');
-        if ($idEstudiante === null) {
-            $this->flash('err', 'Busca primero al estudiante por su documento.');
+        $servicio = new ServicioEntrada($this->db());
+        if ($idEstudiante === null && $request->input('visitante') !== '1') {
+            $this->flash('err', 'Busca primero a la persona por su documento.');
             return $this->redirect('porteria');
         }
 
         try {
-            $visita = (new ServicioEntrada($this->db()))->registrar($idEstudiante, $request->input('tipo'), $this->usuarioId());
+            $visita = $idEstudiante !== null
+                ? $servicio->registrar($idEstudiante, $request->input('tipo'), $this->usuarioId())
+                : $servicio->registrarVisitante($documento, mb_substr($request->input('nombre'), 0, 80), $request->input('tipo'), $this->usuarioId());
             $this->flash('ok', sprintf(
-                'Entrada registrada: %s · %s · tarifa %s.',
-                $visita['nombres'] . ' ' . $visita['apellidos'],
-                $visita['tipo_vehiculo'],
-                money($visita['tarifa_aplicada'])
+                'Entrada registrada: %s · %s · %s.',
+                trim($visita['nombres'] . ' ' . $visita['apellidos']),
+                tipo_label($visita['tipo_vehiculo']),
+                $visita['tarifa_aplicada'] !== null
+                    ? ($visita['liquidacion'] === 'CUBIERTA' ? 'ya tiene el cobro de hoy' : sprintf('%d min de tolerancia, luego %s del día', (int) config('tolerancia_minutos'), money($visita['tarifa_aplicada'])))
+                    : 'sin cobro'
             ));
         } catch (ReglaNegocioException $e) {
             $this->flash('err', $e->getMessage());

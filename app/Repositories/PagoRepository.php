@@ -5,14 +5,19 @@ namespace App\Repositories;
 
 final class PagoRepository extends Repository
 {
-    private const DETALLE = 'SELECT p.*, u.nombre AS cajero, ua.nombre AS anulado_por_nombre,
-                                    v.tipo_vehiculo, v.categoria, v.entrada_en, v.tarifa_aplicada, v.estado AS estado_visita,
+    // Un pago cubre una visita LEGADO (p.id_visita) o un cobro diario (p.id_cobro → c.id_visita).
+    // El débito automático del saldo no tiene cajero: se muestra como «Débito automático».
+    private const DETALLE = "SELECT p.*, COALESCE(u.nombre, 'Débito automático') AS cajero, ua.nombre AS anulado_por_nombre,
+                                    v.tipo_vehiculo, v.categoria, v.entrada_en,
+                                    COALESCE(c.valor, v.tarifa_aplicada) AS tarifa_aplicada, v.estado AS estado_visita,
+                                    c.fecha AS cobro_fecha, c.estado AS cobro_estado,
                                     e.documento, e.nombres, e.apellidos
                                FROM pagos p
-                               JOIN usuarios u     ON u.id_usuario = p.registrado_por
+                          LEFT JOIN usuarios u     ON u.id_usuario = p.registrado_por
                           LEFT JOIN usuarios ua    ON ua.id_usuario = p.anulado_por
-                               JOIN visitas v      ON v.id_visita = p.id_visita
-                               JOIN estudiantes e  ON e.id_estudiante = v.id_estudiante';
+                          LEFT JOIN cobros_diarios c ON c.id_cobro = p.id_cobro
+                               JOIN visitas v      ON v.id_visita = COALESCE(p.id_visita, c.id_visita)
+                               JOIN estudiantes e  ON e.id_estudiante = v.id_estudiante";
 
     public function find(int $id, bool $bloquear = false): ?array
     {
@@ -48,6 +53,25 @@ final class PagoRepository extends Repository
             'INSERT INTO pagos (id_visita, monto, registrado_por, medio_pago, consecutivo, referencia)
              VALUES (?, ?, ?, ?, ?, ?)',
             [$idVisita, $monto, $usuario, $medio, $consecutivo, $referencia]
+        );
+    }
+
+    /** Pago de un cobro diario. $usuario null = débito automático del saldo (medio SALDO). */
+    public function createDeCobro(int $idCobro, string $monto, string $medio, ?int $usuario, string $consecutivo, ?string $referencia): int
+    {
+        return $this->insert(
+            'INSERT INTO pagos (id_cobro, monto, registrado_por, medio_pago, consecutivo, referencia)
+             VALUES (?, ?, ?, ?, ?, ?)',
+            [$idCobro, $monto, $usuario, $medio, $consecutivo, $referencia]
+        );
+    }
+
+    /** Pago válido (PAGADO) de un cobro diario, si existe. */
+    public function validoDeCobro(int $idCobro, bool $bloquear = false): ?array
+    {
+        return $this->one(
+            'SELECT * FROM pagos WHERE pago_cobro_valido = ?' . ($bloquear ? ' FOR UPDATE' : ''),
+            [$idCobro]
         );
     }
 
@@ -96,11 +120,12 @@ final class PagoRepository extends Repository
         $f['estado'] = 'PAGADO';
         [$where, $params] = $this->filtros($f);
         return $this->all(
-            'SELECT DATE(p.pagado_en) AS dia, u.nombre AS cajero, p.medio_pago,
+            'SELECT DATE(p.pagado_en) AS dia, COALESCE(u.nombre, \'Débito automático\') AS cajero, p.medio_pago,
                     COUNT(*) AS cantidad, SUM(p.monto) AS total
                FROM pagos p
-               JOIN usuarios u    ON u.id_usuario = p.registrado_por
-               JOIN visitas v     ON v.id_visita = p.id_visita
+          LEFT JOIN usuarios u    ON u.id_usuario = p.registrado_por
+          LEFT JOIN cobros_diarios c ON c.id_cobro = p.id_cobro
+               JOIN visitas v     ON v.id_visita = COALESCE(p.id_visita, c.id_visita)
                JOIN estudiantes e ON e.id_estudiante = v.id_estudiante
               WHERE ' . implode(' AND ', $where) . '
               GROUP BY DATE(p.pagado_en), u.id_usuario, p.medio_pago

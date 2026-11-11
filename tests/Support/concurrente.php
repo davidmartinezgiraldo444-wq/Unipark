@@ -26,6 +26,13 @@ while (microtime(true) < (float) $inicio) {
 }
 
 try {
+    if ($operacion === 'recarga') {
+        // Acreditación de la misma transacción aprobada desde varios procesos: <referencia> <centavos> <id_tx>.
+        $tx = new App\Services\Pasarela\TransaccionPasarela('WOMPI', $usuario, $id, 'APROBADA', 'APPROVED', (int) $param, 'COP', 'PSE');
+        $r = (new App\Services\ServicioRecargaLinea($pdo))->aplicarTransaccion($tx);
+        echo json_encode(['ok' => $r['resultado'] === 'ACREDITADA', 'codigo' => $r['resultado']]);
+        exit;
+    }
     if ($operacion === 'entrada') {
         $r = (new ServicioEntrada($pdo))->registrar((int) $id, $param, (int) $usuario);
         echo json_encode(['ok' => true, 'id' => (int) $r['id_visita']]);

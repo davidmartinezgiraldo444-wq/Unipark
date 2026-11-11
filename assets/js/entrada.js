@@ -20,7 +20,7 @@
     if (!form.querySelector('input[name="tipo"]:checked')) {
       e.preventDefault();
       if (hint) {
-        hint.textContent = 'Selecciona CARRO o MOTO para registrar la entrada.';
+        hint.textContent = 'Selecciona el tipo de vehículo para registrar la entrada.';
         hint.classList.add('field-error');
       }
       const primero = form.querySelector('input[name="tipo"]:not(:disabled)');

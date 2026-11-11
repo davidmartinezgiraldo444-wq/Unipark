@@ -11,8 +11,15 @@ final class Request
         public readonly array $query = [],
         public readonly array $post = [],
         public readonly string $ip = '127.0.0.1',
+        /** Cuerpo crudo de la solicitud (solo JSON, por ejemplo los webhooks de la pasarela). */
+        public readonly string $cuerpo = '',
+        /** @var array<string,string> cabeceras HTTP con el nombre en minúsculas */
+        public readonly array $cabeceras = [],
     ) {
     }
+
+    /** Tamaño máximo del cuerpo JSON que se lee (un evento de pasarela ocupa unos pocos KB). */
+    private const MAX_CUERPO = 65536;
 
     public static function fromGlobals(string $base): self
     {
@@ -24,13 +31,18 @@ final class Request
         if (str_starts_with($ruta, '/index.php')) {
             $ruta = substr($ruta, strlen('/index.php'));
         }
-        return new self(
-            strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET'),
-            '/' . trim($ruta, '/'),
-            $_GET,
-            $_POST,
-            self::ipCliente(),
-        );
+        $metodo = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        $cuerpo = '';
+        if ($metodo === 'POST' && str_contains(strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? '')), 'application/json')) {
+            $cuerpo = (string) file_get_contents('php://input', false, null, 0, self::MAX_CUERPO);
+        }
+        $cabeceras = [];
+        foreach ($_SERVER as $clave => $valor) {
+            if (str_starts_with($clave, 'HTTP_') && is_string($valor)) {
+                $cabeceras[strtolower(str_replace('_', '-', substr($clave, 5)))] = $valor;
+            }
+        }
+        return new self($metodo, '/' . trim($ruta, '/'), $_GET, $_POST, self::ipCliente(), $cuerpo, $cabeceras);
     }
 
     /**

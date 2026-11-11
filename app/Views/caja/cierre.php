@@ -65,8 +65,14 @@
             $fila = current(array_filter($resumen, static fn ($r) => $r['medio_pago'] === $codigo)) ?: null; ?>
           <dt><?= e($nombre) ?></dt><dd><?= e(money($fila['total'] ?? 0)) ?></dd>
         <?php endforeach; ?>
+        <?php foreach ($medios as $codigo => $nombre):
+            $fila = current(array_filter($recargas, static fn ($r) => $r['medio_pago'] === $codigo)) ?: null;
+            if ($fila === null) continue; ?>
+          <dt>Recargas · <?= e($nombre) ?> (<?= e($fila['cantidad']) ?>)</dt><dd><?= e(money($fila['total'])) ?></dd>
+        <?php endforeach; ?>
         <dt>Total registrado</dt><dd class="total"><?= e(money($total)) ?></dd>
       </dl>
+      <p class="field-hint mt-10">Incluye pagos de cobros y recargas de saldo recibidos por ti. Los débitos automáticos del saldo no pasan por Caja.</p>
     </section>
 
     <section class="panel">
