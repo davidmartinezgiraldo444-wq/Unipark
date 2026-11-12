@@ -29,7 +29,7 @@ final class WebPushTest extends TestCase
         $this->assertSame(65, ord($cuerpo[20]));
         $asPublica = substr($cuerpo, 21, 65);
         $datos = substr($cuerpo, 86);
-        $secreto = openssl_pkey_derive(WebPush::publicaPem($asPublica), $navegador, 32);
+        $secreto = openssl_pkey_derive(WebPush::publicaPem($asPublica), $navegador);
         $ikm = hash_hkdf('sha256', $secreto, 32, "WebPush: info\x00" . $uaPublica . $asPublica, $auth);
         $cek = hash_hkdf('sha256', $ikm, 16, "Content-Encoding: aes128gcm\x00", $sal);
         $nonce = hash_hkdf('sha256', $ikm, 12, "Content-Encoding: nonce\x00", $sal);

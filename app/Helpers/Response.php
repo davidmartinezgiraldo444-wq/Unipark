@@ -70,11 +70,12 @@ final class Response
     {
         $f = fopen('php://temp', 'r+');
         fwrite($f, "\xEF\xBB\xBF"); // BOM para que Excel lea las tildes.
-        fputcsv($f, $encabezados, ';');
+        // Escape explícito: PHP 8.4+ declara obsoleto omitirlo (mismo criterio que la importación).
+        fputcsv($f, $encabezados, ';', '"', '');
         foreach ($filas as $fila) {
             // Evita inyección de fórmulas al abrir el archivo en una hoja de cálculo.
             $fila = array_map(static fn ($v) => is_string($v) && preg_match('/^[=+\-@\t\r]/', $v) ? "'" . $v : $v, $fila);
-            fputcsv($f, array_values($fila), ';');
+            fputcsv($f, array_values($fila), ';', '"', '');
         }
         rewind($f);
         $contenido = stream_get_contents($f);

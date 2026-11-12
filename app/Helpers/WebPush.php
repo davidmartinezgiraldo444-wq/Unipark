@@ -121,7 +121,8 @@ final class WebPush
         $det = openssl_pkey_get_details($efimera);
         $asPublica = "\x04" . self::pad32($det['ec']['x']) . self::pad32($det['ec']['y']);
 
-        $secreto = openssl_pkey_derive(self::publicaPem($uaPublica), $efimera, 32);
+        // Sin longitud: PHP 8.5 declara obsoleto ese parámetro; P-256 deriva siempre 32 bytes.
+        $secreto = openssl_pkey_derive(self::publicaPem($uaPublica), $efimera);
         if ($secreto === false) {
             throw new \RuntimeException('No se pudo derivar el secreto ECDH');
         }

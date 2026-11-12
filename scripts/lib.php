@@ -7,15 +7,30 @@ require_once dirname(__DIR__) . '/app/bootstrap.php';
 
 use App\Helpers\Env;
 
-/** Ruta de un ejecutable de MySQL/MariaDB (mysql, mysqldump). */
+/**
+ * Ruta de un ejecutable de MySQL/MariaDB (mysql, mysqldump). MariaDB 11 ya no instala los nombres antiguos
+ * («mysql», «mysqldump») sino «mariadb» y «mariadb-dump»: se prueban los dos.
+ */
 function mysql_bin(string $nombre): string
 {
+    $alternativo = ['mysql' => 'mariadb', 'mysqldump' => 'mariadb-dump'][$nombre] ?? $nombre;
+    $sufijo = PHP_OS_FAMILY === 'Windows' ? '.exe' : '';
     $dir = Env::get('MYSQL_BIN_DIR', '');
-    $exe = $nombre . (PHP_OS_FAMILY === 'Windows' ? '.exe' : '');
-    if ($dir !== '') {
-        $ruta = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR . $exe;
-        if (is_file($ruta)) {
-            return $ruta;
+    foreach (array_unique([$nombre, $alternativo]) as $candidato) {
+        if ($dir !== '') {
+            $ruta = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR . $candidato . $sufijo;
+            if (is_file($ruta)) {
+                return $ruta;
+            }
+        }
+    }
+    // Sin carpeta configurada: el que exista en el PATH (en Linux, `command -v`).
+    if (PHP_OS_FAMILY !== 'Windows') {
+        foreach (array_unique([$nombre, $alternativo]) as $candidato) {
+            $ruta = trim((string) shell_exec('command -v ' . escapeshellarg($candidato) . ' 2>/dev/null'));
+            if ($ruta !== '') {
+                return $ruta;
+            }
         }
     }
     return $nombre;
