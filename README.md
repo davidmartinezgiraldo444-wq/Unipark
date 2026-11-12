@@ -3,6 +3,8 @@
 Sistema de control de acceso y operación del parqueadero universitario.
 Proyecto académico · Bases de Datos.
 
+**Página en funcionamiento:** https://64-177-60-212.sslip.io
+
 Portería escanea el carnet con el celular y la cámara reconoce el tipo de vehículo con IA. Hay 15 minutos de tolerancia sin cobro; después se cobra **una sola vez por día** según el rol y el vehículo, y el valor se descuenta del saldo **antes** de llegar a la salida (si no alcanza, queda pendiente en Caja y llega un aviso al celular). La salida solo consulta si está pagado. Los visitantes no pagan. No se guarda placa, color ni foto, y cada operación queda registrada con el funcionario responsable.
 
 **Stack:** PHP 8 (sin frameworks ni dependencias) · MySQL/MariaDB (InnoDB) · HTML, CSS y JavaScript.
