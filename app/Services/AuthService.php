@@ -78,8 +78,10 @@ final class AuthService
 
         $usuario = $this->usuarios->findByLogin($login);
         // Se verifica un hash aunque el usuario no exista, para no revelarlo por el tiempo de respuesta.
-        $hash = $usuario['password_hash'] ?? password_hash(random_bytes(12), PASSWORD_DEFAULT);
-        $claveCorrecta = password_verify($clave, $hash);
+        // En hexadecimal: PHP 8.5 no acepta el byte nulo en bcrypt (random_bytes puede generarlo).
+        $hash = $usuario['password_hash'] ?? password_hash(bin2hex(random_bytes(12)), PASSWORD_DEFAULT);
+        // Una clave con byte nulo nunca es válida (bcrypt la truncaría); se verifica igual para no variar el tiempo.
+        $claveCorrecta = password_verify(str_replace("\0", '', $clave), $hash) && !str_contains($clave, "\0");
         $habilitado = $usuario !== null && (int) $usuario['activo'] === 1 && (int) $usuario['rol_activo'] === 1;
 
         if (!$claveCorrecta || !$habilitado) {
@@ -132,6 +134,9 @@ final class AuthService
         }
         if ($nueva !== $confirmacion) {
             throw new ReglaNegocioException('CONFIRMACION', 'La confirmación no coincide con la nueva contraseña.');
+        }
+        if (str_contains($nueva, "\0")) {
+            throw new ReglaNegocioException('POLITICA', 'La contraseña contiene caracteres no permitidos.');
         }
         if (password_verify($nueva, $usuario['password_hash'])) {
             throw new ReglaNegocioException('CLAVE_REPETIDA', 'La nueva contraseña debe ser distinta de la actual.');
