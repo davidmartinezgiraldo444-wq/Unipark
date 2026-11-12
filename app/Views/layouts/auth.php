@@ -26,9 +26,6 @@ $instalando = ($titulo ?? '') === 'Instalación';
           <li><span class="mono">02</span>Creación de tablas y cuentas</li>
           <li><span class="mono">03</span>Ingreso con <span class="mono">admin</span> / <span class="mono">demo2026*</span></li>
         </ol>
-      <?php else: ?>
-        <h2>Cada cuenta es individual.</h2>
-        <p>Cada entrada, pago y salida queda registrada con el funcionario que la realizó. No compartas tu usuario ni tu contraseña.</p>
       <?php endif; ?>
     </div>
 
