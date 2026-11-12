@@ -29,10 +29,6 @@ $instalando = ($titulo ?? '') === 'Instalación';
       <?php else: ?>
         <h2>Cada cuenta es individual.</h2>
         <p>Cada entrada, pago y salida queda registrada con el funcionario que la realizó. No compartas tu usuario ni tu contraseña.</p>
-        <ul class="auth-roles">
-          <li><span class="mono">Portería</span>Entradas y salidas</li>
-          <li><span class="mono">Caja</span>Pagos y comprobantes</li>
-        </ul>
       <?php endif; ?>
     </div>
 
